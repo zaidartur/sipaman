@@ -28,7 +28,7 @@ class LandingPageController extends Controller
     public function update(UpdateLandingPageRequest $request, LandingPageContent $landingPage): RedirectResponse
     {
         $before = $landingPage->toArray();
-        $updated = $this->landingPageContentService->update($landingPage, $request->validated(), auth()->id());
+        $updated = $this->landingPageContentService->update($landingPage, $request->contentData(), auth()->id());
         $this->logAudit('update', 'landing_page_contents', $landingPage->id, $before, $updated->toArray());
 
         return back()->with('success', 'Konten landing page berhasil diperbarui.');

@@ -65,7 +65,5 @@
     <main>
         @yield('content')
     </main>
-
-    @include('partials.public.footer')
 </body>
 </html>
