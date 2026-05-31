@@ -35,8 +35,9 @@ class UserSeeder extends Seeder
                 'status_akun' => 'aktif',
             ],
             [
-                'nama' => 'User',
-                'email' => env('USER_EMAIL', 'user@pirt.go.id'),
+                'nama' => 'Pelaku Usaha',
+                'email' => null,
+                'nib' => env('USER_NIB', '1234567890123'),
                 'password' => env('USER_PASSWORD', 'password'),
                 'role_id' => $roles['user'],
                 'status_akun' => 'aktif',
@@ -44,11 +45,14 @@ class UserSeeder extends Seeder
         ];
 
         foreach ($users as $user) {
+            $identity = $user['email'] ? ['email' => $user['email']] : ['nib' => $user['nib']];
+
             DB::table('users')->updateOrInsert(
-                ['email' => $user['email']],
+                $identity,
                 [
                     'nama' => $user['nama'],
                     'email' => $user['email'],
+                    'nib' => $user['nib'] ?? null,
                     'password' => Hash::make($user['password']),
                     'role_id' => $user['role_id'],
                     'status_akun' => $user['status_akun'],
