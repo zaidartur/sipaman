@@ -41,8 +41,7 @@ Route::middleware(['auth:sanctum', 'role:user'])->prefix('user')->name('api.user
         Route::get('/', [UserProductController::class, 'index'])->name('index');
         Route::get('/{produk}', [UserProductController::class, 'show'])->name('show');
         Route::patch('/{produk}', [UserProductController::class, 'update'])->name('update');
-        Route::post('/{produk}/images', [UserProductImageController::class, 'store'])->name('upload-images');
-        Route::delete('/{produk}/images', [UserProductImageController::class, 'destroy'])->name('delete-image');
+        Route::post('/{produk}/image', [UserProductImageController::class, 'store'])->name('replace-image');
     });
 });
 
@@ -51,9 +50,6 @@ Route::middleware(['auth:sanctum', 'role:admin,super_admin'])->prefix('admin')->
 
     Route::post('/produk/import/rekap-pirt', [AdminProductImportController::class, 'rekapPirt'])->name('produk.import-rekap-pirt');
     Route::post('/produk/import/status-komitmen', [AdminProductVerificationController::class, 'import'])->name('produk.import-status-komitmen');
-
-    Route::put('/produk/{produk}/verification', [AdminProductVerificationController::class, 'update'])->name('produk.verification.update');
-    Route::patch('/produk/{produk}/reject', [AdminProductVerificationController::class, 'reject'])->name('produk.verification.reject');
 
     Route::post('/produk/{produk}/images', [AdminProductImageController::class, 'store'])->name('produk.images.store');
     Route::delete('/produk/images/{gambarProduk}', [AdminProductImageController::class, 'destroy'])->name('produk.images.destroy');

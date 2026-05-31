@@ -5,7 +5,9 @@ use App\Http\Controllers\Web\Admin\ImportLogController;
 use App\Http\Controllers\Web\Admin\JenisBarangController;
 use App\Http\Controllers\Web\Admin\LandingPageController;
 use App\Http\Controllers\Web\Admin\LogController;
+use App\Http\Controllers\Web\Admin\PelakuUsahaAccountController;
 use App\Http\Controllers\Web\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Web\Admin\ProductImageManagementController;
 use App\Http\Controllers\Web\Admin\ProductImageController;
 use App\Http\Controllers\Web\Admin\ProductImportController;
 use App\Http\Controllers\Web\Admin\ProductVerificationController;
@@ -47,19 +49,16 @@ Route::redirect('/register', '/login')->name('register');
 Route::middleware(['auth', 'role:user'])->prefix('user')->name('user.')->group(function () {
     Route::get('/dashboard', [UserDashboardController::class, 'index'])->name('dashboard');
 
-    // Pengaturan akun: ubah nama & password
+    // Pengaturan akun: identitas NIB tampil read-only, user hanya dapat mengubah password
     Route::get('/account', [AccountController::class, 'index'])->name('account.index');
-    Route::patch('/account/nama', [AccountController::class, 'updateNama'])->name('account.update-nama');
     Route::patch('/account/password', [AccountController::class, 'updatePassword'])->name('account.update-password');
 
-    // Konfigurasi produk: harga, nama toko, gambar
+    // Konfigurasi produk: harga, deskripsi tampilan, dan ganti gambar
     Route::prefix('products/setting')->name('products.setting.')->group(function () {
         Route::get('/', [ProductSettingController::class, 'index'])->name('index');
         Route::get('/{id}/edit', [ProductSettingController::class, 'edit'])->name('edit');
         Route::patch('/{id}', [ProductSettingController::class, 'update'])->name('update');
         Route::post('/{id}/gambar', [ProductSettingController::class, 'uploadGambar'])->name('upload-gambar');
-        Route::patch('/{produkId}/gambar/{gambarId}/utama', [ProductSettingController::class, 'setUtama'])->name('set-utama');
-        Route::delete('/{produkId}/gambar/{gambarId}', [ProductSettingController::class, 'hapusGambar'])->name('hapus-gambar');
     });
 });
 
@@ -75,12 +74,15 @@ Route::middleware(['auth', 'role:admin,super_admin'])
         Route::post('/products/import/rekap-pirt', [ProductImportController::class, 'rekapPirt'])->name('products.import.rekap-pirt');
         Route::post('/products/{produk}/images', [ProductImageController::class, 'store'])->name('products.images.store');
         Route::delete('/products/images/{gambarProduk}', [ProductImageController::class, 'destroy'])->name('products.images.destroy');
+        Route::get('/product-images', [ProductImageManagementController::class, 'index'])->name('product-images.index');
+        Route::post('/product-images/{produk}', [ProductImageManagementController::class, 'update'])->name('product-images.update');
 
         Route::get('/verifications', [ProductVerificationController::class, 'index'])->name('verifications.index');
         Route::post('/verifications/import', [ProductVerificationController::class, 'import'])->name('verifications.import');
-        Route::get('/verifications/{produk}/edit', [ProductVerificationController::class, 'edit'])->name('verifications.edit');
-        Route::put('/verifications/{produk}', [ProductVerificationController::class, 'update'])->name('verifications.update');
+        Route::get('/verifications/{produk}', [ProductVerificationController::class, 'show'])->name('verifications.show');
 
+        Route::get('/jenis-barang/perlu-review', [JenisBarangController::class, 'review'])->name('jenis-barang.review');
+        Route::post('/jenis-barang/sinkronkan', [JenisBarangController::class, 'sync'])->name('jenis-barang.sync');
         Route::resource('jenis-barang', JenisBarangController::class)
             ->parameters(['jenis-barang' => 'jenisBarang'])
             ->except(['show']);
@@ -88,6 +90,10 @@ Route::middleware(['auth', 'role:admin,super_admin'])
         Route::resource('landing-page', LandingPageController::class)
             ->parameters(['landing-page' => 'landingPage'])
             ->only(['index', 'update']);
+
+        Route::get('/pelaku-usaha', [PelakuUsahaAccountController::class, 'index'])->name('pelaku-usaha.index');
+        Route::get('/pelaku-usaha/{user}/edit', [PelakuUsahaAccountController::class, 'edit'])->name('pelaku-usaha.edit');
+        Route::patch('/pelaku-usaha/{user}', [PelakuUsahaAccountController::class, 'update'])->name('pelaku-usaha.update');
 
         Route::get('/logs', [LogController::class, 'index'])->name('logs.index');
         Route::get('/import-logs', [ImportLogController::class, 'index'])->name('import-logs.index');

@@ -7,8 +7,12 @@
         ],
         'Data PIRT' => [
             ['label' => 'Produk', 'icon' => 'inventory_2', 'route' => 'admin.products.index', 'active' => 'admin.products.*'],
+            ['label' => 'Gambar Produk', 'icon' => 'image', 'route' => 'admin.product-images.index', 'active' => 'admin.product-images.*'],
             ['label' => 'Jenis Barang', 'icon' => 'category', 'route' => 'admin.jenis-barang.index', 'active' => 'admin.jenis-barang.*'],
             ['label' => 'Verifikasi', 'icon' => 'verified', 'route' => 'admin.verifications.index', 'active' => 'admin.verifications.*'],
+        ],
+        'Pengguna' => [
+            ['label' => 'Akun Pelaku Usaha', 'icon' => 'badge', 'route' => 'admin.pelaku-usaha.index', 'active' => 'admin.pelaku-usaha.*'],
         ],
         'Konten Website' => [
             ['label' => 'Landing Page', 'icon' => 'web', 'route' => 'admin.landing-page.index', 'active' => 'admin.landing-page.*'],
@@ -42,7 +46,7 @@
             </a>
         </div>
 
-        <nav class="scrollbar-none flex-1 space-y-5 overflow-y-auto px-4 py-5" aria-label="Navigasi admin">
+        <nav id="admin-sidebar-scroll" class="scrollbar-none flex-1 space-y-5 overflow-y-auto px-4 py-5" aria-label="Navigasi admin">
             @foreach($groups as $groupLabel => $items)
                 <div>
                     <p class="px-3.5 pb-2 text-[10px] font-700 uppercase tracking-[0.16em] text-surface/45">{{ $groupLabel }}</p>
@@ -50,6 +54,8 @@
                         @foreach($items as $item)
                             @php($active = request()->routeIs($item['active']))
                             <a href="{{ route($item['route']) }}"
+                               @if($active) aria-current="page" @endif
+                               data-sidebar-active="{{ $active ? 'true' : 'false' }}"
                                class="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-600 transition-colors {{ $active ? 'bg-accent text-primary shadow-soft' : 'text-surface/70 hover:bg-surface/10 hover:text-surface' }}">
                                 <span class="material-symbols-outlined text-[20px]">{{ $item['icon'] }}</span>
                                 {{ $item['label'] }}

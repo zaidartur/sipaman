@@ -123,6 +123,25 @@
                 resize();
                 textarea.addEventListener('input', resize);
             });
+
+            const sidebar = document.getElementById('admin-sidebar-scroll');
+            if (sidebar) {
+                const storageKey = 'sipaman.admin.sidebar.scrollTop';
+                const savedPosition = Number.parseInt(localStorage.getItem(storageKey) || '', 10);
+
+                if (! Number.isNaN(savedPosition)) {
+                    sidebar.scrollTop = savedPosition;
+                }
+
+                const activeItem = sidebar.querySelector('[data-sidebar-active="true"]');
+                if (activeItem) {
+                    activeItem.scrollIntoView({ block: 'nearest' });
+                }
+
+                const savePosition = () => localStorage.setItem(storageKey, String(sidebar.scrollTop));
+                sidebar.addEventListener('click', savePosition);
+                window.addEventListener('beforeunload', savePosition);
+            }
         });
     </script>
 </head>
