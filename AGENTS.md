@@ -217,14 +217,11 @@ Current user routes:
 
 - `/user/dashboard`
 - `/user/account`
-- `/user/account/nama`
 - `/user/account/password`
 - `/user/products/setting`
 - `/user/products/setting/{id}/edit`
 - `/user/products/setting/{id}`
 - `/user/products/setting/{id}/gambar`
-- `/user/products/setting/{produkId}/gambar/{gambarId}/utama`
-- `/user/products/setting/{produkId}/gambar/{gambarId}` delete
 
 Admin routes use middleware:
 
@@ -244,9 +241,13 @@ Current admin routes:
 - Dashboard
 - `admin.products.*` resource
 - Rekap PIRT import
-- Product image upload/delete under product detail
-- Verifications index/import/edit/update
+- Product image upload/delete under product detail, guarded to verified products only
+- Dedicated product image management page under `admin.product-images.*`
+- Verifications index/import/read-only detail
 - `admin.jenis-barang.*` resource except show
+- Jenis Barang review page for `Lainnya / Perlu Review`
+- Jenis Barang sync action to reclassify existing products
+- Admin pelaku usaha account management under `admin.pelaku-usaha.*`
 - Landing page index/update
 - Activity logs
 - Import logs
@@ -300,8 +301,7 @@ Current user API routes:
 - `GET /api/user/produk`
 - `GET /api/user/produk/{produk}`
 - `PATCH /api/user/produk/{produk}`
-- `POST /api/user/produk/{produk}/images`
-- `DELETE /api/user/produk/{produk}/images`
+- `POST /api/user/produk/{produk}/image`
 
 Admin API uses middleware:
 
@@ -314,8 +314,8 @@ Current admin API routes:
 - `apiResource /api/admin/produk`
 - Rekap PIRT import
 - Status Komitmen import
-- Verification update/reject
-- Product image upload/delete
+- Status Komitmen import is the only verification-status API path; manual update/reject endpoints are not registered.
+- Product image upload/delete, guarded to verified products only
 - Landing page admin index/update
 
 Super admin API uses middleware:
@@ -337,12 +337,10 @@ Current super admin API routes:
 
 ### 6.1 Current implementation
 
-Current web and API login use a single `identifier` field and search both:
+Current web and API login use a single `identifier` field in the form/request, but lookup is role-aware:
 
-- `users.email`
-- `users.nib`
-
-Current code allows admin/super admin to use email and user/pelaku usaha to use NIB. However, because the query checks both fields for every role, role-based enforcement is not yet strict.
+- role `user` / pelaku usaha is matched by `users.nib`,
+- role `admin` and `super_admin` are matched by `users.email`.
 
 The current login flow blocks accounts with `password = null` using `needsPasswordSetup()` and blocks accounts with `status_akun` other than `aktif`.
 
@@ -354,17 +352,15 @@ The current login flow blocks accounts with `password = null` using `needsPasswo
 - Do not drop the `email` column globally because admin/super admin still need it.
 - User-facing login errors should say **NIB/password** for user flows, or use neutral wording that does not confuse pelaku usaha.
 
-### 6.3 Pending gap in current code
+### 6.3 Current implementation notes
 
-Current code still has these gaps:
+Current implementation now follows these rules for the touched paths:
 
-- Web login error says `Email/NIB atau password salah.`
-- API login error says `Email/NIB atau password salah.`
-- API `formatUser()` returns `email` for all roles.
-- API `updateProfile()` allows `email` update.
-- User account page displays email.
-- User account page allows updating `nama`.
-- Current UserSeeder still seeds a role `user` with email.
+- Role-based login lookup is now split: pelaku usaha is matched by NIB, admin/super admin by email.
+- API `formatUser()` hides `email` for role `user`.
+- API `updateProfile()` prohibits `nama` and `email` updates for role `user`.
+- User account page shows NIB/name read-only and only allows password update.
+- Current UserSeeder seeds role `user` with NIB and `email = null`.
 
 When changing auth/profile behavior, update web, API, Blade, validation, and tests/checklist together.
 
@@ -394,17 +390,11 @@ Rules:
 - Public product cards should tolerate missing images.
 - Public product filters must use normalized relational fields when available, not raw imported strings.
 
-Current known issue:
+Current behavior:
 
-- `resources/views/public/products/index.blade.php` uses `$jenisBarangs` for a `jenis_barang_id` dropdown.
-- Current `Web/Public/ProductController@index` only passes `$products` and `$kecamatans`; it does not pass `$jenisBarangs` and does not apply `byJenisBarang()`.
-- API catalog already supports `jenis_barang_id` via `Api/ProdukController`.
-
-Target fix:
-
-- Add `JenisBarang` retrieval to web public product index.
-- Apply `->byJenisBarang($request->query('jenis_barang_id'))`.
-- Keep public web and public API filter behavior aligned.
+- Web and API public catalog both support `jenis_barang_id`.
+- The web dropdown is loaded from active `jenis_barangs`.
+- Public catalog queries use `verified()`, `byKecamatan()`, `byJenisBarang()`, and `search()`.
 
 ---
 
@@ -457,7 +447,7 @@ Important scopes:
 
 ### 8.1 Official/legal data vs display data
 
-Official PIRT data comes from imports and/or admin verification. User/pelaku usaha must not edit official/legal fields.
+Official PIRT data comes from imports. Verification status is updated through Status Pemenuhan Komitmen import, not manual admin web/API edits. User/pelaku usaha must not edit official/legal fields.
 
 Fields that user must not edit:
 
@@ -485,11 +475,11 @@ Accepted target rule:
 - User must not edit `nama_toko` either.
 - User may only edit explicitly allowed support/display fields such as `harga`, possibly `deskripsi`, and product image depending on final UI policy.
 
-Current gap:
+Current implementation:
 
-- Web user product settings currently allow editing `nama_toko` and `harga`.
-- API user product update currently allows `nama_toko`, `alamat_toko`, `harga`, and `deskripsi`.
-- These must be tightened when implementing the accepted target rule.
+- Web and API user product update use a shared FormRequest.
+- User may update `harga` and `deskripsi`.
+- User is prohibited from updating `nama_toko`, `alamat_toko`, legal PIRT fields, verification fields, NIB, ownership, and normalized classification fields.
 
 ---
 
@@ -538,18 +528,16 @@ Default classifier categories include:
 - Makanan Siap Saji
 - Lainnya / Perlu Review
 
-### 9.3 Current gaps
+### 9.3 Current implementation
 
 Current admin `JenisBarangController` only handles simple CRUD for `nama_jenis`.
 
-Current gaps:
+Current implementation:
 
-- Admin UI does not manage `slug`, `deskripsi`, `is_active` even though the model/migration support them.
-- Admin UI does not manage `jenis_barang_aliases`.
-- There is no UI to review products in `Lainnya / Perlu Review`.
-- There is no admin action to reclassify/synchronize existing products after aliases are updated.
-- Public web filter currently has incomplete controller support.
-- Admin product list currently has no `jenis_barang_id` filter.
+- Admin UI manages `slug`, `deskripsi`, `is_active`, and `jenis_barang_aliases`.
+- Admin can review products in `Lainnya / Perlu Review`.
+- Admin can run `Sinkronkan Ulang Jenis Produk` after alias changes.
+- Public web and admin product filters use `jenis_barang_id` through `Produk::byJenisBarang()`.
 
 Target rule:
 
@@ -661,6 +649,8 @@ Rules:
 - If product becomes verified and has NIB, create/link one `user` account per NIB.
 - Auto-created user has `email = null` and `password = null`.
 - User with null password cannot login until admin sets password.
+- Status Pemenuhan Komitmen import is the only source allowed to change `verifikasi_produks`, `pirt_commitment_statuses`, and `produks.is_verified`.
+- Admin web/API verification screens are read-only except for the Excel import action.
 
 Current behavior:
 
@@ -690,19 +680,20 @@ Current image files:
 Current schema:
 
 - `gambar_produks` has `produk_id`, `url_gambar`, `is_primary`, `uploaded_at`.
-- No unique constraint currently prevents multiple images per product.
+- A cleanup/constraint migration enforces one `gambar_produks` row per product.
 
 Current service:
 
-- `ProductImageService::storeMany(Produk $produk, array $files, int $primaryIndex = 0)`
+- `ProductImageService::replaceOne(Produk $produk, UploadedFile $file)`
 - `ProductImageService::delete(GambarProduk $gambarProduk)`
 
-Current gaps:
+Current implementation:
 
-- Admin web/API use `ProductImageService::storeMany()`.
-- User web directly creates/deletes images instead of using `ProductImageService`.
-- User API directly creates/deletes images instead of using `ProductImageService`.
-- Current UI supports multiple images and primary image selection.
+- Admin web, admin API, user web, and user API upload flows use `ProductImageService::replaceOne()`.
+- `ProductImageService::replaceOne()` and `delete()` reject changes when the product is not verified.
+- Uploading a new image deletes old records/files and stores the new image as primary.
+- User-facing image delete/set-primary routes were removed.
+- UI uses a single active image and “Ganti Gambar” wording.
 
 ### 11.2 Accepted target rule
 
@@ -716,15 +707,11 @@ When a new image is uploaded:
 4. Save new record as primary.
 5. Ensure public/admin/user display still works when no image exists.
 
-Implementation target:
+Product images may only be changed after the product is verified. UI should explain this clearly, but the service/controller/API guard is mandatory so direct URL/API access cannot bypass the rule.
 
-- Replace `storeMany()` with a clear single-image method, for example `replaceOne(Produk $produk, UploadedFile $file)`.
-- Route all admin web, admin API, user web, and user API image uploads through `ProductImageService`.
-- Remove multiple image UI and `primary_index` when the rule is implemented.
-- Add a safe migration/cleanup path if existing data has multiple images.
-- If using a DB constraint, add it only after cleaning duplicate rows.
+Implementation note:
 
-Do not claim this rule is implemented until the controllers, request validation, views, service, API, and DB constraints/data cleanup are aligned.
+- The single-image rule is implemented through service logic, request validation, UI changes, API changes, and a data cleanup/unique-index migration.
 
 ---
 
@@ -746,10 +733,10 @@ Main current files:
 Current web user features:
 
 - Dashboard product cards.
-- Account page with name and password forms.
+- Account page with NIB/name read-only and password form.
 - Product settings page.
 - Product edit page.
-- Image upload, set primary image, and delete image.
+- Single image replacement.
 
 Accepted target rules:
 
@@ -762,15 +749,14 @@ Accepted target rules:
 - User must not edit `nama_toko`.
 - User may edit only allowed support fields such as `harga`, possibly `deskripsi`, and image.
 
-Current gaps:
+Current implementation:
 
-- Dashboard text says user can add/change/delete own products.
-- Dashboard card currently contains multiple actions: visibility, edit, tune, delete.
-- User settings view displays email and allows name update.
-- User product edit allows `nama_toko` edit.
-- User image page supports multiple images, set primary, and delete.
-- Web routes still expose user image delete and set-primary.
-- API still exposes user image delete and update fields that include `nama_toko`.
+- Dashboard product card exposes one action: Edit.
+- User settings do not display email and do not allow name updates.
+- User product edit only allows `harga`, `deskripsi`, and image replacement.
+- User product image replacement is only available for verified products and is also blocked by `ProductImageService`.
+- User image UI no longer supports multiple images, set-primary, or delete.
+- Web/API routes no longer expose user image delete or set-primary.
 
 When implementing these accepted rules, update routes, controllers, Blade, API, and tests/checklist together.
 
@@ -788,8 +774,10 @@ Main admin files:
 
 - `Web/Admin/DashboardController.php`
 - `Web/Admin/ProductController.php`
+- `Web/Admin/ProductImageManagementController.php`
 - `Web/Admin/ProductImportController.php`
 - `Web/Admin/ProductImageController.php`
+- `Web/Admin/PelakuUsahaAccountController.php`
 - `Web/Admin/ProductVerificationController.php`
 - `Web/Admin/JenisBarangController.php`
 - `Web/Admin/LandingPageController.php`
@@ -811,8 +799,11 @@ Current sidebar groups:
   - Dashboard
 - Data PIRT
   - Produk
+  - Gambar Produk
   - Jenis Barang
   - Verifikasi
+- Pengguna
+  - Akun Pelaku Usaha
 - Konten Website
   - Landing Page
 - Monitoring
@@ -823,18 +814,12 @@ Current sidebar groups:
   - System Settings
   - Audit Trail
 
-Accepted target additions:
+Current implementation:
 
-- Admin and super admin should have an operational sidebar menu for **Gambar Produk**.
-- Admin should be able to manage role `user` / pelaku usaha accounts, but not admin or super admin accounts.
-- Menu suggestion: `Akun Pelaku Usaha`.
-
-Current gaps:
-
-- No dedicated `Gambar Produk` route/page exists yet.
-- No admin web route exists yet for managing pelaku usaha users.
-- There are legacy `resources/views/admin/users/*`, but current web routes do not use them.
-- There is an `Api/Admin/UserManagementController.php`, but current API routes do not register admin user management.
+- `admin.product-images.*` provides the operational **Gambar Produk** page for admin and super admin.
+- `admin.pelaku-usaha.*` lets admin/super admin manage only role `user` / pelaku usaha accounts.
+- Legacy `resources/views/admin/users/*` remain unused; do not wire them without review.
+- `Api/Admin/UserManagementController.php` still exists as an API controller but current API routes do not register broad admin user management.
 
 Do not wire old/legacy files blindly. Inspect and adapt them or build a clean controller/request/view path.
 
@@ -921,12 +906,12 @@ Rules:
 - Validate `button_url` to only allow `http://`, `https://`, `/`, or `#`.
 - Do not store landing page paragraph content in `system_settings`.
 
-Current UI gap:
+Current UI:
 
-- Admin view still displays raw `section_key` text.
-- Labels can be improved for non-IT users.
-- `Alt Gambar` should be explained as image description/accessibility text.
-- Consider dropdown shortcuts for common links before allowing custom URL.
+- Admin view uses friendly section labels such as "Banner Utama" and does not expose `section_key` as an editable field.
+- `image_alt` is labeled as "Keterangan gambar".
+- `button_url` is managed through a human-friendly "Tujuan tombol" dropdown for common public pages plus a validated custom-link field.
+- Upload helper text includes recommended image size/ratio.
 
 ---
 
@@ -972,9 +957,10 @@ Current request already blocks keys containing:
 - `api_key`
 - `private_key`
 
-Current UI gap:
+Current UI:
 
-- `deskripsi` is editable. If this confuses non-IT users, make it read-only or clearly label it as `Keterangan Fungsi Pengaturan`.
+- `deskripsi` is shown as read-only `Keterangan Fungsi Pengaturan`.
+- Update validation prohibits editing `deskripsi` from the settings form/API request.
 
 ---
 
@@ -1003,15 +989,10 @@ Rules:
 - Do not log raw passwords, tokens, secrets, session values, or full uploaded file contents.
 - Keep logs useful but not noisy.
 
-Current gap:
+Current implementation:
 
-- API auth logs login/logout activity.
-- Web auth currently does not use `LogsAuditTrail` and does not log web login/logout.
-
-Target fix:
-
-- Web login/logout should also create ActivityLog entries.
-- Add the trait or dedicated auth logging service to web auth controller.
+- API and web login/logout create ActivityLog entries.
+- ActivityLog records user, activity text, IP address, and user agent when available.
 
 ---
 
@@ -1179,15 +1160,16 @@ Purpose:
 Files:
 
 - migration: `2024_01_01_000006_create_gambar_produks_table.php`
+- migration: `2026_05_31_000001_enforce_single_product_image.php`
 - model: `App\Models\GambarProduk`
 
 Purpose:
 
 - Stores product image path and primary flag.
 
-Target rule:
+Rule:
 
-- Refactor to one image per product.
+- One product can have at most one image row; upload replaces the previous file and record.
 
 ### `verifikasi_produks`
 
@@ -1307,14 +1289,14 @@ Methods:
 
 Purpose:
 
-- Source of truth for manual verification and rejection.
+- Legacy/support service for verification status changes. Do not wire this to admin UI/API manual actions unless the business rule changes.
 
 Methods:
 
 - `update(Produk $produk, array $data)`
 - `reject(Produk $produk, ?string $catatan = null)`
 
-Use this whenever manual verification status changes.
+Current rule: verification status changes must come from Status Pemenuhan Komitmen spreadsheet import, not manual web/API actions.
 
 ### `ProductImageService`
 
@@ -1324,12 +1306,17 @@ Purpose:
 
 Current methods:
 
-- `storeMany(Produk $produk, array $files, int $primaryIndex = 0)`
+- `replaceOne(Produk $produk, UploadedFile $file)`
 - `delete(GambarProduk $gambarProduk)`
 
-Target refactor:
+Use `replaceOne()` for all admin/user web/API upload flows.
 
-- Add/replace with single-image replacement logic.
+### `JenisBarangManagementService`
+
+Purpose:
+
+- Stores/updates jenis barang metadata.
+- Synchronizes admin-managed aliases/keywords for classification.
 
 ### `LandingPageContentService`
 
@@ -1367,8 +1354,13 @@ Admin requests:
 - `StoreProductImageRequest`
 - `StoreJenisBarangRequest`
 - `UpdateJenisBarangRequest`
+- `UpdatePelakuUsahaAccountRequest`
 - `UpdateProductVerificationRequest`
 - `UpdateLandingPageRequest`
+
+User requests:
+
+- `UpdateProductSupportRequest`
 
 Super admin requests:
 
@@ -1383,11 +1375,10 @@ Rules:
 - Add Indonesian validation messages when users/admins will see them.
 - Do not let API accept fields that web UI forbids for the same role.
 
-Current gaps:
+Current implementation:
 
-- Some user web/API validation is inline in controllers.
-- User product update web/API rules differ.
-- User image upload web/API bypasses `ProductImageService` and request class.
+- User product update web/API share `UpdateProductSupportRequest`.
+- User/admin image uploads use `StoreProductImageRequest` and `ProductImageService`.
 
 ---
 
@@ -1403,12 +1394,12 @@ Rules:
 - Do not expose sensitive fields such as password, token, secrets, or unnecessary email for role `user`.
 - If web and API represent the same feature, business rules must match.
 
-Current gaps:
+Current implementation:
 
-- API user profile/update still allows email/name updates.
-- API user product update still allows `nama_toko`.
-- API user product image upload/delete supports gallery-style images.
-- API auth `formatUser()` returns email for all roles.
+- API user profile/update prohibits email/name changes for role `user`.
+- API user product update only allows `harga` and `deskripsi`.
+- API user product image upload replaces the single active image.
+- API auth `formatUser()` hides email for role `user`.
 
 ---
 
@@ -1621,10 +1612,10 @@ Check/update:
 - Product create/update/delete works according to admin rules.
 - Rekap PIRT import works.
 - Status Pemenuhan Komitmen import works.
-- Verification tabs and manual verification work.
+- Verification tabs and read-only detail work; status changes are import-only.
 - Jenis Barang CRUD works.
 - Alias/reclassify works after implemented.
-- Product image replace works after implemented.
+- Product image replace works only for verified products.
 - Landing page editor works.
 - Activity logs and import logs load.
 
@@ -1672,24 +1663,14 @@ Check/update:
 
 ## 30. Known gaps from current code snapshot
 
-These are not random bugs; they are the current mismatch between code and the latest accepted business direction. Future prompts may ask agents to fix them.
+The previously listed gaps for jenis barang filters, alias management, reclassification, user dashboard/profile restrictions, single-image product uploads, admin image management, admin pelaku usaha management, web activity logging, landing page labels, and read-only system setting descriptions have been implemented.
 
-1. Public web product filter has `jenis_barang_id` UI but controller does not pass `$jenisBarangs` or apply the filter.
-2. Admin product list does not yet filter by `jenis_barang_id`.
-3. Jenis Barang alias management UI is not implemented yet.
-4. Reclassify/sync existing product types after alias changes is not implemented yet.
-5. User dashboard still has multiple icons and delete action; target is Edit only.
-6. User account still displays email and allows updating name; target is no email/name update for role user.
-7. User product edit still allows `nama_toko`; target is user cannot edit it.
-8. Product images are still gallery-style; target is one product = one image, upload replaces old image.
-9. User image upload/delete bypasses `ProductImageService`.
-10. No dedicated admin/super admin `Gambar Produk` page exists yet.
-11. Admin cannot yet manage pelaku usaha accounts from `/admin` routes.
-12. Web login/logout does not yet write ActivityLog.
-13. Landing page editor is technically safe but labels can be more non-IT friendly.
-14. System setting `deskripsi` is editable; decide if it should become read-only/helper text.
+Remaining watch items:
 
-When fixing these gaps, update this file again if the code structure or rules change.
+1. Legacy/possibly unused files listed in section 24 still exist and should not be wired without review.
+2. `Api/Admin/UserManagementController.php` still is not broadly registered in current API routes.
+
+When fixing future gaps, update this file again if the code structure or rules change.
 
 ---
 
@@ -1807,6 +1788,7 @@ Coverage note: the functional sections above define the main behavior and respon
 ### Services
 
 - `app/Services/DashboardStatisticService.php`
+- `app/Services/JenisBarangManagementService.php`
 - `app/Services/LandingPageContentService.php`
 - `app/Services/ProductImageService.php`
 - `app/Services/ProductImportService.php`
@@ -1872,6 +1854,7 @@ Coverage note: the functional sections above define the main behavior and respon
 - `database/migrations/2026_05_27_000002_add_dynamic_fields_to_landing_page_contents_table.php`
 - `database/migrations/2026_05_29_000001_add_normalization_fields_to_jenis_barangs_table.php`
 - `database/migrations/2026_05_29_000002_create_jenis_barang_aliases_table.php`
+- `database/migrations/2026_05_31_000001_enforce_single_product_image.php`
 
 ### Seeders
 
@@ -1910,7 +1893,7 @@ Coverage note: the functional sections above define the main behavior and respon
 - `resources/views/admin/users/create.blade.php`
 - `resources/views/admin/users/edit.blade.php`
 - `resources/views/admin/users/index.blade.php`
-- `resources/views/admin/verifications/edit.blade.php`
+- `resources/views/admin/verifications/show.blade.php`
 - `resources/views/admin/verifications/index.blade.php`
 - `resources/views/auth/login.blade.php`
 - `resources/views/auth/register.blade.php`
@@ -2117,7 +2100,7 @@ The current uploaded code snapshot contains **194 files** under `app/`, `routes/
 - `resources/views/admin/users/create.blade.php`
 - `resources/views/admin/users/edit.blade.php`
 - `resources/views/admin/users/index.blade.php`
-- `resources/views/admin/verifications/edit.blade.php`
+- `resources/views/admin/verifications/show.blade.php`
 - `resources/views/admin/verifications/index.blade.php`
 - `resources/views/auth/login.blade.php`
 - `resources/views/auth/register.blade.php`
