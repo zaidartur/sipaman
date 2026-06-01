@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Schema;
 class SystemSettings
 {
     private const CACHE_KEY = 'system_settings.public';
+    private const DEFAULT_PAGINATION = 12;
+    private const MIN_PAGINATION = 3;
+    private const MAX_PAGINATION = 100;
 
     public static function all(): array
     {
@@ -36,6 +39,11 @@ class SystemSettings
         return ($settings[$key] ?? null) ?: $default;
     }
 
+    public static function pagination(mixed $value = null): int
+    {
+        return self::normalizePagination($value ?? self::get('default_pagination'));
+    }
+
     public static function forget(): void
     {
         try {
@@ -54,5 +62,22 @@ class SystemSettings
         } catch (\Throwable) {
             return [];
         }
+    }
+
+    private static function normalizePagination(mixed $value): int
+    {
+        if (is_string($value)) {
+            $value = trim($value);
+        }
+
+        if (is_int($value) || (is_string($value) && ctype_digit($value))) {
+            $number = (int) $value;
+
+            if ($number >= self::MIN_PAGINATION && $number <= self::MAX_PAGINATION) {
+                return $number;
+            }
+        }
+
+        return self::DEFAULT_PAGINATION;
     }
 }

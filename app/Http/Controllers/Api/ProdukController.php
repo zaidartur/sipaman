@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\JenisBarang;
 use App\Models\Kecamatan;
 use App\Models\Produk;
+use App\Support\SystemSettings;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -18,12 +19,12 @@ class ProdukController extends Controller
             'search' => 'nullable|string|max:100',
             'kecamatan_id' => 'nullable|integer|exists:kecamatans,id',
             'jenis_barang_id' => 'nullable|integer|exists:jenis_barangs,id',
-            'per_page' => 'nullable|integer|min:1|max:50',
+            'per_page' => 'nullable|integer|min:3|max:100',
         ]);
 
         $produks = $this->catalogQuery($request)
             ->orderBy('nama_branding')
-            ->paginate($request->query('per_page', 15))
+            ->paginate(SystemSettings::pagination($request->query('per_page')))
             ->through(fn (Produk $produk) => $this->formatPublicProduct($produk));
 
         return response()->json($produks);
@@ -35,12 +36,12 @@ class ProdukController extends Controller
             'kecamatan_id' => 'nullable|integer|exists:kecamatans,id',
             'jenis_barang_id' => 'nullable|integer|exists:jenis_barangs,id',
             'search' => 'nullable|string|max:100',
-            'per_page' => 'nullable|integer|min:1|max:50',
+            'per_page' => 'nullable|integer|min:3|max:100',
         ]);
 
         $produks = $this->catalogQuery($request)
             ->orderBy('nama_branding')
-            ->paginate($request->query('per_page', 15))
+            ->paginate(SystemSettings::pagination($request->query('per_page')))
             ->through(fn (Produk $produk) => $this->formatPublicProduct($produk));
 
         $kecamatans = Cache::remember('kecamatans_all', 3600, function () {

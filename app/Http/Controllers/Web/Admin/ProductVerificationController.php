@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\ImportCommitmentStatusRequest;
 use App\Models\ImportLog;
 use App\Models\Produk;
 use App\Services\ProductImportService;
+use App\Support\SystemSettings;
 use App\Traits\LogsAuditTrail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -36,7 +37,7 @@ class ProductVerificationController extends Controller
         $products = $query
             ->search($request->query('search'))
             ->latest()
-            ->paginate(15)
+            ->paginate(SystemSettings::pagination())
             ->withQueryString();
 
         $stats = [

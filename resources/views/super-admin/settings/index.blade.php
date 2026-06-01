@@ -4,7 +4,7 @@
 @section('page-title', 'System Settings')
 
 @section('content')
-    <div class="space-y-5">
+    <div id="system-settings" class="space-y-6">
         @if (session('success'))
             <x-alert type="success">{{ session('success') }}</x-alert>
         @endif
@@ -20,34 +20,108 @@
         @endif
 
         <x-alert type="info">
-            System Settings dipakai untuk konfigurasi global seperti nama aplikasi, kontak, alamat, dan teks footer. Keterangan fungsi pengaturan hanya bantuan untuk admin, bukan konten publik. Jangan simpan password, token, API key, atau secret di halaman ini.
+            System Settings dipakai untuk konfigurasi global website seperti identitas, navigasi, kontak, footer, tampilan data, dan pengaturan sistem yang aman. Konten halaman depan dikelola dari menu Landing Page, bukan dari halaman ini.
         </x-alert>
 
-        @forelse($settings as $setting)
-            <form action="{{ route('super-admin.settings.update', $setting) }}" method="POST" class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                @csrf
-                @method('PUT')
+        @forelse($groupedSettings as $groupKey => $group)
+            @php
+                $hasFileUpload = collect($group['items'])->contains(fn ($item) => ($item['meta']['type'] ?? null) === 'image');
+            @endphp
 
-                <div class="flex flex-col justify-between gap-3 md:flex-row md:items-start">
-                    <div>
-                        <p class="text-xs font-bold uppercase tracking-wide text-slate-500">{{ $setting->key }}</p>
-                        <h2 class="font-display mt-1 text-lg font-bold text-slate-900">{{ str($setting->key)->replace('_', ' ')->title() }}</h2>
-                        @if ($setting->deskripsi)
-                            <p class="mt-1 text-sm text-slate-600">{{ $setting->deskripsi }}</p>
+            <section id="settings-{{ $groupKey }}" class="scroll-mt-24 rounded-xl border border-slate-200 bg-white shadow-sm">
+                <form
+                    action="{{ route('super-admin.settings.update-group', $groupKey) }}"
+                    method="POST"
+                    @if ($hasFileUpload) enctype="multipart/form-data" @endif
+                >
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" name="return_anchor" value="settings-{{ $groupKey }}">
+
+                    <div class="border-b border-slate-200 px-6 py-5">
+                        <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Konfigurasi Global</p>
+                        <h2 class="font-display mt-1 text-xl font-bold text-slate-900">{{ $group['label'] }}</h2>
+                        <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-600">{{ $group['description'] }}</p>
+
+                        @if ($groupKey === 'navigation')
+                            <div class="mt-3 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+                                Tujuan menu dikunci oleh sistem. Anda hanya mengubah nama menu.
+                            </div>
                         @endif
                     </div>
-                </div>
 
-                <label class="mt-5 block text-sm font-semibold text-slate-700">Nilai</label>
-                <textarea name="value" rows="3" class="mt-1 w-full rounded-lg border-slate-300" placeholder="Isi nilai pengaturan global">{{ old('value', $setting->value) }}</textarea>
+                    <div class="grid gap-4 p-6 lg:grid-cols-2">
+                        @foreach($group['items'] as $item)
+                            @php
+                                $setting = $item['setting'];
+                                $meta = $item['meta'];
+                                $inputType = $meta['type'] ?? 'text';
+                                $fieldName = "values[{$setting->key}]";
+                                $errorKey = "values.{$setting->key}";
+                                $value = old("values.{$setting->key}", $setting->value);
+                                $logoUrl = null;
 
-                <div class="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <p class="text-sm font-semibold text-slate-700">Keterangan Fungsi Pengaturan</p>
-                    <p class="mt-1 text-sm text-slate-600">{{ $setting->deskripsi ?: 'Belum ada keterangan.' }}</p>
-                </div>
+                                if ($setting->key === 'site_logo_path' && $setting->value) {
+                                    $logoUrl = \Illuminate\Support\Facades\Storage::disk('public')->url($setting->value);
+                                }
+                            @endphp
 
-                <button class="mt-4 rounded-lg bg-slate-900 px-4 py-2 font-semibold text-white">Simpan Pengaturan</button>
-            </form>
+                            <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                                <label for="setting-{{ $setting->id }}" class="block text-sm font-bold text-slate-900">
+                                    {{ $meta['label'] }}
+                                </label>
+
+                                @if ($inputType === 'image')
+                                    <div class="mt-3 flex flex-col gap-4 sm:flex-row sm:items-center">
+                                        @if ($logoUrl)
+                                            <img src="{{ $logoUrl }}" alt="Logo website saat ini" class="h-16 w-16 rounded-lg border border-slate-200 bg-white object-cover">
+                                        @else
+                                            <span class="flex h-16 w-16 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white text-slate-500">
+                                                <span class="material-symbols-outlined text-[28px]">image</span>
+                                            </span>
+                                        @endif
+                                        <input
+                                            id="setting-{{ $setting->id }}"
+                                            type="file"
+                                            name="logo"
+                                            accept=".jpg,.jpeg,.png,.webp"
+                                            class="block w-full rounded-lg border border-slate-300 bg-white text-sm file:mr-4 file:border-0 file:bg-slate-100 file:px-4 file:py-2 file:font-semibold file:text-slate-700 hover:file:bg-slate-200"
+                                        >
+                                    </div>
+                                    @error('logo')<p class="mt-1 text-sm text-red-700">{{ $message }}</p>@enderror
+                                @elseif ($inputType === 'textarea')
+                                    <textarea
+                                        id="setting-{{ $setting->id }}"
+                                        name="{{ $fieldName }}"
+                                        rows="3"
+                                        class="mt-2 w-full rounded-lg border-slate-300 bg-white text-sm"
+                                    >{{ $value }}</textarea>
+                                    @error($errorKey)<p class="mt-1 text-sm text-red-700">{{ $message }}</p>@enderror
+                                @else
+                                    <input
+                                        id="setting-{{ $setting->id }}"
+                                        name="{{ $fieldName }}"
+                                        type="{{ $inputType === 'number' ? 'number' : ($inputType === 'email' ? 'email' : 'text') }}"
+                                        value="{{ $value }}"
+                                        @if ($inputType === 'number') min="{{ $meta['min'] ?? 1 }}" max="{{ $meta['max'] ?? 100000 }}" step="1" @endif
+                                        class="mt-2 w-full rounded-lg border-slate-300 bg-white text-sm"
+                                    >
+                                    @error($errorKey)<p class="mt-1 text-sm text-red-700">{{ $message }}</p>@enderror
+                                @endif
+
+                                <p class="mt-2 text-xs leading-5 text-slate-500">{{ $setting->deskripsi ?: 'Keterangan pengaturan dikelola oleh sistem.' }}</p>
+                                <p class="mt-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Kode internal: {{ $setting->key }}</p>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <div class="flex justify-end border-t border-slate-200 px-6 py-4">
+                        <button class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white">
+                            Simpan {{ $group['label'] }}
+                        </button>
+                    </div>
+                </form>
+            </section>
         @empty
             <x-alert type="info">Belum ada pengaturan sistem. Jalankan seeder default agar super admin dapat mengelola konfigurasi global.</x-alert>
         @endforelse

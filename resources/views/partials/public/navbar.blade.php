@@ -2,8 +2,11 @@
     $settings = $siteSettings ?? [];
     $siteName = ($settings['site_name'] ?? null) ?: 'SIPAMAN';
     $siteTagline = ($settings['site_tagline'] ?? null) ?: 'Sistem Informasi Pangan Aman';
-    $logoPath = $settings['logo_path'] ?? null;
+    $logoPath = ($settings['site_logo_path'] ?? null) ?: ($settings['logo_path'] ?? null);
     $logoUrl = $logoPath ? \Illuminate\Support\Facades\Storage::disk('public')->url($logoPath) : null;
+    $homeLabel = ($settings['nav_home_label'] ?? null) ?: 'Home';
+    $productsLabel = ($settings['nav_products_label'] ?? null) ?: 'Produk';
+    $umkmLabel = ($settings['nav_umkm_label'] ?? null) ?: 'UMKM';
     $dashboardRoute = null;
     $accountIdentifier = null;
 
@@ -15,9 +18,9 @@
     }
 
     $links = [
-        ['label' => 'Home', 'route' => 'home', 'active' => request()->routeIs('home')],
-        ['label' => 'Produk', 'route' => 'products.index', 'active' => request()->routeIs('products.*')],
-        ['label' => 'UMKM', 'route' => 'umkm.index', 'active' => request()->routeIs('umkm.*')],
+        ['label' => $homeLabel, 'route' => 'home', 'active' => request()->routeIs('home')],
+        ['label' => $productsLabel, 'route' => 'products.index', 'active' => request()->routeIs('products.*')],
+        ['label' => $umkmLabel, 'route' => 'umkm.index', 'active' => request()->routeIs('umkm.*')],
     ];
 @endphp
 

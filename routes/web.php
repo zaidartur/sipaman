@@ -104,6 +104,7 @@ Route::middleware(['auth', 'role:super_admin'])
     ->name('super-admin.')
     ->group(function () {
         Route::resource('users', UserManagementController::class)->except(['show']);
+        Route::put('/settings/group/{group}', [SystemSettingController::class, 'updateGroup'])->name('settings.update-group');
         Route::resource('settings', SystemSettingController::class)->only(['index', 'update']);
         Route::get('/audit-trails', [AuditTrailController::class, 'index'])->name('audit-trails.index');
     });

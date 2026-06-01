@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\JenisBarang;
 use App\Models\Kecamatan;
 use App\Models\Produk;
+use App\Support\SystemSettings;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -26,7 +27,7 @@ class ProductController extends Controller
                 });
             })
             ->latest()
-            ->paginate(12)
+            ->paginate(SystemSettings::pagination())
             ->withQueryString();
 
         $kecamatans = Kecamatan::orderBy('nama_kecamatan')->get();

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Imports\PirtCommitmentStatusImport;
 use App\Models\ImportLog;
 use App\Models\Produk;
+use App\Support\SystemSettings;
 use App\Traits\LogsAuditTrail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -53,7 +54,7 @@ class VerificationController extends Controller
             $query->search($search);
         }
 
-        $products = $query->latest()->paginate(15)->withQueryString();
+        $products = $query->latest()->paginate(SystemSettings::pagination())->withQueryString();
 
         $stats = [
             'total'         => Produk::count(),

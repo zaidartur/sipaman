@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\User;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\UpdateProductSupportRequest;
 use App\Models\Produk;
+use App\Support\SystemSettings;
 use App\Traits\LogsAuditTrail;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,10 +17,14 @@ class ProductController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        $request->validate([
+            'per_page' => ['nullable', 'integer', 'min:3', 'max:100'],
+        ]);
+
         $produks = Produk::ownedBy($request->user()->id)
             ->with(['kecamatan', 'jenisBarang', 'gambarUtama'])
             ->orderBy('nama_branding')
-            ->paginate($request->query('per_page', 15))
+            ->paginate(SystemSettings::pagination($request->query('per_page')))
             ->through(fn (Produk $produk) => $this->formatOwnedProduct($produk));
 
         return response()->json($produks);

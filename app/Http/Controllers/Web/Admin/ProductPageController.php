@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Web\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\ImportLog;
 use App\Models\Produk;
+use App\Support\SystemSettings;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -26,7 +27,7 @@ class ProductPageController extends Controller
                 }
             })
             ->latest()
-            ->paginate(10)
+            ->paginate(SystemSettings::pagination())
             ->withQueryString();
 
         $stats = [
