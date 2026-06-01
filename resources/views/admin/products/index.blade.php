@@ -100,11 +100,8 @@
             <div class="flex flex-col justify-between gap-4 md:flex-row md:items-center">
                 <div>
                     <h2 class="font-display text-xl font-bold">Data Produk PIRT</h2>
-                    <p class="mt-1 text-slate-600">Semua produk yang sudah diimport dari file Rekap Data PIRT.</p>
+                    <p class="mt-1 text-slate-600">Data produk resmi hanya dibaca dari import Rekap Data PIRT. Admin dapat melihat detail, mencari, memfilter, dan melakukan import.</p>
                 </div>
-                <a href="{{ route('admin.products.create') }}" class="rounded-lg bg-slate-900 px-4 py-2 text-center font-semibold text-white hover:bg-slate-800">
-                    Tambah Produk
-                </a>
             </div>
 
             <form method="GET" action="{{ route('admin.products.index') }}" class="mt-5 grid gap-3 md:grid-cols-[1fr_190px_190px_190px_auto]">

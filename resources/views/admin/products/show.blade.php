@@ -15,13 +15,6 @@
                     <p class="mt-1 text-sm text-slate-500">{{ $produk->no_sppirt }}</p>
                     <div class="mt-3">@if ($produk->is_verified)<x-badge-status status="terverifikasi">Terverifikasi</x-badge-status>@else<x-badge-status status="belum_terverifikasi">Belum Terverifikasi</x-badge-status>@endif</div>
                 </div>
-                <div class="flex gap-2">
-                    <a href="{{ route('admin.products.edit', $produk) }}" class="rounded-lg bg-slate-900 px-4 py-2 font-semibold text-white">Edit</a>
-                    <form action="{{ route('admin.products.destroy', $produk) }}" method="POST" onsubmit="return confirm('Hapus produk ini?')">
-                        @csrf @method('DELETE')
-                        <button class="rounded-lg border border-red-200 px-4 py-2 font-semibold text-red-700 hover:bg-red-50">Hapus</button>
-                    </form>
-                </div>
             </div>
 
             <dl class="mt-6 grid gap-4 md:grid-cols-3">
@@ -50,17 +43,16 @@
         </div>
 
         <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h3 class="font-display text-lg font-bold">Gambar Produk</h3>
-            @if ($produk->is_verified)
-                <form action="{{ route('admin.products.images.store', $produk) }}" method="POST" enctype="multipart/form-data" class="mt-4 flex flex-col gap-3 md:flex-row md:items-center">
-                    @csrf
-                    <input type="file" name="gambar" accept="image/jpeg,image/png,image/jpg,image/webp" required class="block w-full rounded-lg border border-slate-300 text-sm file:mr-4 file:border-0 file:bg-slate-100 file:px-4 file:py-2 file:font-semibold">
-                    <button class="rounded-lg bg-blue-700 px-4 py-2 font-semibold text-white">Ganti Gambar</button>
-                </form>
-                <p class="mt-2 text-xs text-slate-500">Upload baru akan mengganti gambar lama. Format JPG, PNG, atau WebP. Maksimal 2 MB.</p>
-            @else
-                <x-alert type="warning" class="mt-4">Belum terverifikasi — gambar belum dapat diubah.</x-alert>
-            @endif
+            <div class="flex flex-col justify-between gap-3 md:flex-row md:items-start">
+                <div>
+                    <h3 class="font-display text-lg font-bold">Gambar Produk</h3>
+                    <p class="mt-1 text-sm text-slate-600">Gambar produk dikelola dari menu khusus Gambar Produk dan hanya untuk produk terverifikasi.</p>
+                </div>
+                <a href="{{ route('admin.product-images.index') }}" class="inline-flex w-fit items-center gap-2 rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white">
+                    <span class="material-symbols-outlined text-[18px]">image</span>
+                    Buka Gambar Produk
+                </a>
+            </div>
 
             <div class="mt-5">
                 @if ($produk->gambarUtama)

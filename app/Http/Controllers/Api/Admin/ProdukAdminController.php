@@ -10,6 +10,7 @@ use App\Models\ImportLog;
 use App\Models\Produk;
 use App\Models\User;
 use App\Services\ProductImageService;
+use App\Support\SystemSettings;
 use App\Traits\LogsAuditTrail;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -22,7 +23,7 @@ use Maatwebsite\Excel\Facades\Excel;
  * ----------------------
  * Akses: admin, super_admin
  * Fitur:
- *   - CRUD produk (index, show, store, update, destroy)
+ *   - Produk admin aktif bersifat read-only + import; create/update/delete manual tidak dipakai.
  *   - Import Excel
  *   - Import Excel
  *   - Upload & hapus gambar (hanya produk terverifikasi)
@@ -53,7 +54,7 @@ class ProdukAdminController extends Controller
         }
 
         return response()->json(
-            $query->orderByDesc('created_at')->paginate($request->query('per_page', 20))
+            $query->orderByDesc('created_at')->paginate(SystemSettings::pagination($request->query('per_page')))
         );
     }
 
@@ -68,6 +69,8 @@ class ProdukAdminController extends Controller
     // ── POST /api/admin/produk ────────────────────────────────
     public function store(Request $request): JsonResponse
     {
+        return $this->manualProductMutationDisabled();
+
         $data = $request->validate([
             'user_id' => 'nullable|integer|exists:users,id',
             'no_sppirt' => 'required|string|max:100|unique:produks,no_sppirt',
@@ -113,6 +116,8 @@ class ProdukAdminController extends Controller
     // ── PUT /api/admin/produk/{produk} ────────────────────────
     public function update(Request $request, Produk $produk): JsonResponse
     {
+        return $this->manualProductMutationDisabled();
+
         $data = $request->validate([
             'user_id' => 'sometimes|nullable|integer|exists:users,id',
             'no_sppirt' => "sometimes|string|max:100|unique:produks,no_sppirt,{$produk->id}",
@@ -158,6 +163,8 @@ class ProdukAdminController extends Controller
     // ── DELETE /api/admin/produk/{produk} ─────────────────────
     public function destroy(Produk $produk): JsonResponse
     {
+        return $this->manualProductMutationDisabled();
+
         $sebelum = $produk->toArray();
 
         // Hapus file gambar dari storage
@@ -320,5 +327,12 @@ class ProdukAdminController extends Controller
         return User::whereKey($userId)
             ->whereHas('role', fn ($query) => $query->where('nama_role', 'user'))
             ->exists();
+    }
+
+    private function manualProductMutationDisabled(): JsonResponse
+    {
+        return response()->json([
+            'message' => 'Data produk resmi hanya diperbarui melalui import Rekap PIRT.',
+        ], 403);
     }
 }
