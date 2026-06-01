@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreProductImageRequest;
 use App\Models\Produk;
 use App\Services\ProductImageService;
+use App\Support\SystemSettings;
 use App\Traits\LogsAuditTrail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,18 +22,19 @@ class ProductImageManagementController extends Controller
 
     public function index(Request $request): View
     {
-        $products = Produk::with(['gambarUtama', 'jenisBarang'])
+        $products = Produk::verified()
+            ->with(['gambarUtama', 'jenisBarang'])
             ->search($request->query('search'))
             ->when($request->query('image_status') === 'available', fn ($query) => $query->whereHas('gambarProduks'))
             ->when($request->query('image_status') === 'missing', fn ($query) => $query->whereDoesntHave('gambarProduks'))
             ->latest()
-            ->paginate(15)
+            ->paginate(SystemSettings::pagination())
             ->withQueryString();
 
         $stats = [
-            'total' => Produk::count(),
-            'available' => Produk::whereHas('gambarProduks')->count(),
-            'missing' => Produk::whereDoesntHave('gambarProduks')->count(),
+            'total' => Produk::verified()->count(),
+            'available' => Produk::verified()->whereHas('gambarProduks')->count(),
+            'missing' => Produk::verified()->whereDoesntHave('gambarProduks')->count(),
         ];
 
         return view('admin.product-images.index', compact('products', 'stats'));

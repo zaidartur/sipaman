@@ -10,7 +10,7 @@
 
     <div class="grid gap-4 md:grid-cols-3">
         <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p class="text-sm font-semibold text-slate-500">Total Produk</p>
+            <p class="text-sm font-semibold text-slate-500">Total Produk Terverifikasi</p>
             <p class="mt-2 text-3xl font-bold text-slate-900">{{ number_format($stats['total']) }}</p>
         </div>
         <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -27,7 +27,7 @@
         <div class="flex flex-col justify-between gap-4 md:flex-row md:items-start">
             <div>
                 <h2 class="font-display text-xl font-bold">Kelola Gambar Produk</h2>
-                <p class="mt-1 text-slate-600">Satu produk hanya menyimpan satu gambar aktif. Upload baru akan mengganti gambar lama.</p>
+                <p class="mt-1 text-slate-600">Halaman ini hanya menampilkan produk terverifikasi. Satu produk hanya menyimpan satu gambar aktif, dan upload baru akan mengganti gambar lama.</p>
             </div>
         </div>
 
@@ -76,28 +76,17 @@
                                 @else
                                     <span class="rounded-full bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700">Belum ada</span>
                                 @endif
-                                <div class="mt-2">
-                                    @if ($product->is_verified)
-                                        <span class="rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700">Terverifikasi</span>
-                                    @else
-                                        <span class="rounded-full bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700">Belum terverifikasi</span>
-                                    @endif
-                                </div>
                             </td>
                             <td class="px-4 py-3">
-                                @if ($product->is_verified)
-                                    <form action="{{ route('admin.product-images.update', $product) }}" method="POST" enctype="multipart/form-data" class="flex min-w-[260px] flex-col gap-2">
-                                        @csrf
-                                        <input type="file" name="gambar" accept="image/jpeg,image/png,image/jpg,image/webp" required class="block w-full rounded-lg border border-slate-300 text-xs file:mr-3 file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:font-semibold">
-                                        <button class="rounded-lg bg-blue-700 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-800">Ganti Gambar</button>
-                                    </form>
-                                @else
-                                    <span class="inline-flex max-w-[260px] rounded-lg bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700">Belum terverifikasi — gambar belum dapat diubah.</span>
-                                @endif
+                                <form action="{{ route('admin.product-images.update', $product) }}" method="POST" enctype="multipart/form-data" class="flex min-w-[260px] flex-col gap-2">
+                                    @csrf
+                                    <input type="file" name="gambar" accept="image/jpeg,image/png,image/jpg,image/webp" required class="block w-full rounded-lg border border-slate-300 text-xs file:mr-3 file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:font-semibold">
+                                    <button class="rounded-lg bg-blue-700 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-800">Ganti Gambar</button>
+                                </form>
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="5" class="px-4 py-10 text-center text-slate-500">Tidak ada produk yang cocok dengan filter.</td></tr>
+                        <tr><td colspan="5" class="px-4 py-10 text-center text-slate-500">Tidak ada produk terverifikasi yang cocok dengan filter.</td></tr>
                     @endforelse
                 </tbody>
             </table>
