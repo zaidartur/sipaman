@@ -1,8 +1,8 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "yoffiaji/sipaman",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "SIPAMAN Laravel application for PIRT product information and safe food data management in Karanganyar.",
     "keywords": ["laravel", "framework"],
     "license": "MIT",
     "require": {

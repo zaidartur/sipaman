@@ -18,6 +18,7 @@ class PanelRoutingAndAccountManagementTest extends TestCase
         $this->assertTrue(Route::has('panel.products.index'));
         $this->assertTrue(Route::has('panel.jenis-barang.index'));
         $this->assertTrue(Route::has('panel.pelaku-usaha.index'));
+        $this->assertFalse(Route::has('panel.dashboard.alias'));
 
         $this->assertFalse(Route::has('admin.dashboard'));
         $this->assertFalse(Route::has('admin.products.index'));

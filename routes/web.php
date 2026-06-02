@@ -64,7 +64,6 @@ Route::middleware(['auth', 'role:admin,super_admin'])
     ->name('panel.')
     ->group(function () {
         Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
-        Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard.alias');
 
         Route::resource('products', AdminProductController::class)
             ->parameters(['products' => 'produk'])
