@@ -26,7 +26,7 @@ class StoreProductRequest extends FormRequest
             'jenis_barang_id' => ['nullable', 'integer', 'exists:jenis_barangs,id'],
             'nama_pelaku_usaha' => ['required', 'string', 'max:150'],
             'alamat' => ['required', 'string'],
-            'nib' => ['nullable', 'string', 'max:100'],
+            'nib' => ['nullable', 'string', 'max:50'],
             'no_hp' => ['nullable', 'string', 'max:100'],
             'nama_toko' => ['nullable', 'string', 'max:500'],
             'alamat_toko' => ['nullable', 'string'],

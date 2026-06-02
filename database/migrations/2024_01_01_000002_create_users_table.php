@@ -11,8 +11,9 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('nama', 150);
-            $table->string('email', 150)->unique();
-            $table->string('password');
+            $table->string('email', 150)->nullable()->unique();
+            $table->string('nib', 50)->nullable()->unique();
+            $table->string('password')->nullable();
             $table->foreignId('role_id')->constrained('roles')->restrictOnDelete();
             $table->enum('status_akun', ['aktif', 'nonaktif', 'kunci'])->default('aktif');
             $table->rememberToken();

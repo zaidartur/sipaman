@@ -14,7 +14,10 @@ return new class extends Migration
             $table->foreignId('user_verifikator_id')->constrained('users')->restrictOnDelete();
             $table->boolean('verifikasi_produk')->default(false);
             $table->boolean('verifikasi_label')->default(false);
-            $table->enum('status_komitmen', ['ya', 'tidak'])->default('tidak');
+            $table->boolean('pkp')->default(false);
+            $table->boolean('cppob_pemeriksaan_sarana')->default(false);
+            $table->boolean('status_komitmen')->default(false);
+            $table->text('catatan')->nullable();
             $table->timestamps();
         });
     }

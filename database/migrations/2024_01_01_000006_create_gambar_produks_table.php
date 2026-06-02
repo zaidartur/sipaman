@@ -15,6 +15,9 @@ return new class extends Migration
             $table->boolean('is_primary')->default(false);
             $table->timestamp('uploaded_at')->useCurrent();
             $table->timestamps();
+
+            $table->index(['produk_id', 'is_primary'], 'idx_gambar_produk_primary');
+            $table->unique('produk_id', 'gambar_produks_produk_id_unique');
         });
     }
 

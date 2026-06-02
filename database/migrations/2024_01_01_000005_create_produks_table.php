@@ -39,6 +39,13 @@ return new class extends Migration
             $table->string('status_oss', 100)->nullable();
             $table->boolean('is_verified')->default(false);
             $table->timestamps();
+
+            $table->index('is_verified', 'idx_produks_is_verified');
+            $table->index('user_id', 'idx_produks_user');
+            $table->index('kecamatan_id', 'idx_produks_kecamatan');
+            $table->index('jenis_barang_id', 'idx_produks_jenis_barang');
+            $table->index('nama_branding', 'idx_produks_nama_branding');
+            $table->index('masa_berlaku_pirt', 'idx_produks_masa_berlaku_pirt');
         });
     }
 

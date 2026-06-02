@@ -18,6 +18,10 @@ return new class extends Migration
             $table->json('data_baru')->nullable();
             $table->string('ip_address', 45)->nullable();
             $table->timestamps();
+
+            $table->index(['user_id', 'created_at'], 'idx_audit_user_created');
+            $table->index('aksi', 'idx_audit_aksi');
+            $table->index('tabel_terkait', 'idx_audit_tabel');
         });
     }
 

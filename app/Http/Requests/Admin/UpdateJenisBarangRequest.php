@@ -15,7 +15,7 @@ class UpdateJenisBarangRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nama_jenis' => ['required', 'string', 'max:150', Rule::unique('jenis_barangs', 'nama_jenis')->ignore($this->route('jenisBarang')?->id)],
+            'nama_jenis' => ['required', 'string', 'max:100', Rule::unique('jenis_barangs', 'nama_jenis')->ignore($this->route('jenisBarang')?->id)],
             'slug' => ['nullable', 'string', 'max:160', Rule::unique('jenis_barangs', 'slug')->ignore($this->route('jenisBarang')?->id)],
             'deskripsi' => ['nullable', 'string', 'max:1000'],
             'is_active' => ['sometimes', 'boolean'],
@@ -27,6 +27,7 @@ class UpdateJenisBarangRequest extends FormRequest
     {
         return [
             'nama_jenis.required' => 'Nama jenis barang wajib diisi.',
+            'nama_jenis.max' => 'Nama jenis barang maksimal 100 karakter.',
             'nama_jenis.unique' => 'Nama jenis barang sudah digunakan.',
             'slug.unique' => 'Slug jenis barang sudah digunakan.',
             'deskripsi.max' => 'Deskripsi maksimal 1000 karakter.',

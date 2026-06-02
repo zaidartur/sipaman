@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::create('import_logs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->restrictOnDelete();
+            $table->string('tipe_file', 50)->nullable()->index();
             $table->string('nama_file', 255);
             $table->integer('jumlah_baris')->default(0);
             $table->integer('jumlah_berhasil')->default(0);
