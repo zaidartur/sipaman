@@ -74,13 +74,13 @@
 
                     <div>
                         <label for="harga" class="mb-1.5 block text-sm font-600 text-on-surface">Harga (Rp)</label>
-                        <input type="number" id="harga" name="harga" min="0" step="1" value="{{ old('harga', $produk->harga) }}" class="w-full rounded-xl border border-outline-variant bg-white px-3.5 py-3 text-sm text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/20 @error('harga') border-red-400 @enderror" placeholder="Kosongkan jika belum ada harga">
+                        <input type="number" id="harga" name="harga" min="0" step="1" value="{{ old('harga', $produk->harga) }}" class="form-input-sipaman w-full @error('harga') border-red-400 @enderror" placeholder="Kosongkan jika belum ada harga">
                         @error('harga')<p class="mt-1.5 text-xs font-600 text-red-600">{{ $message }}</p>@enderror
                     </div>
 
                     <div>
                         <label for="deskripsi" class="mb-1.5 block text-sm font-600 text-on-surface">Deskripsi Tampilan</label>
-                        <textarea id="deskripsi" name="deskripsi" rows="5" class="w-full rounded-xl border border-outline-variant bg-white px-3.5 py-3 text-sm text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/20 @error('deskripsi') border-red-400 @enderror" placeholder="Deskripsi singkat untuk katalog publik">{{ old('deskripsi', $produk->deskripsi) }}</textarea>
+                        <textarea id="deskripsi" name="deskripsi" rows="5" class="form-textarea-sipaman w-full @error('deskripsi') border-red-400 @enderror" placeholder="Deskripsi singkat untuk katalog publik">{{ old('deskripsi', $produk->deskripsi) }}</textarea>
                         @error('deskripsi')<p class="mt-1.5 text-xs font-600 text-red-600">{{ $message }}</p>@enderror
                     </div>
 
@@ -113,7 +113,7 @@
                             @csrf
                             <label for="gambar" class="block text-sm font-600 text-on-surface">Ganti Gambar</label>
                             <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-                                <input type="file" id="gambar" name="gambar" accept="image/jpeg,image/png,image/jpg,image/webp" class="block w-full text-sm text-on-surface-variant file:mr-3 file:rounded-lg file:border-0 file:bg-primary-soft file:px-4 file:py-2 file:text-sm file:font-600 file:text-primary hover:file:bg-primary hover:file:text-white">
+                                <input type="file" id="gambar" name="gambar" accept="image/jpeg,image/png,image/jpg,image/webp" class="form-file-sipaman">
                                 <button type="submit" class="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-primary px-5 py-2.5 text-sm font-600 text-white transition-colors hover:bg-primary-container">
                                     <span class="material-symbols-outlined text-[18px]">upload</span>
                                     Ganti Gambar

@@ -6,13 +6,17 @@ use App\Http\Controllers\Controller;
 use App\Models\JenisBarang;
 use App\Models\Kecamatan;
 use App\Models\Produk;
-use App\Support\SystemSettings;
+use App\Services\PublicProductCatalogService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
 class ProdukController extends Controller
 {
+    public function __construct(private PublicProductCatalogService $catalogService)
+    {
+    }
+
     public function index(Request $request): JsonResponse
     {
         $request->validate([
@@ -22,9 +26,8 @@ class ProdukController extends Controller
             'per_page' => 'nullable|integer|min:3|max:100',
         ]);
 
-        $produks = $this->catalogQuery($request)
-            ->orderBy('nama_branding')
-            ->paginate(SystemSettings::pagination($request->query('per_page')))
+        $produks = $this->catalogService
+            ->paginate($request->only(['search', 'kecamatan_id', 'jenis_barang_id']), $request->query('per_page'))
             ->through(fn (Produk $produk) => $this->formatPublicProduct($produk));
 
         return response()->json($produks);
@@ -39,9 +42,8 @@ class ProdukController extends Controller
             'per_page' => 'nullable|integer|min:3|max:100',
         ]);
 
-        $produks = $this->catalogQuery($request)
-            ->orderBy('nama_branding')
-            ->paginate(SystemSettings::pagination($request->query('per_page')))
+        $produks = $this->catalogService
+            ->paginate($request->only(['search', 'kecamatan_id', 'jenis_barang_id']), $request->query('per_page'))
             ->through(fn (Produk $produk) => $this->formatPublicProduct($produk));
 
         $kecamatans = Cache::remember('kecamatans_all', 3600, function () {
@@ -87,15 +89,6 @@ class ProdukController extends Controller
             'data' => $this->formatPublicProduct($produk, true),
             'produk_lain_pelaku_usaha_sama' => $produkLain,
         ]);
-    }
-
-    private function catalogQuery(Request $request)
-    {
-        return Produk::with(['kecamatan', 'jenisBarang', 'gambarUtama'])
-            ->verified()
-            ->byKecamatan($request->query('kecamatan_id'))
-            ->byJenisBarang($request->query('jenis_barang_id'))
-            ->search($request->query('search'));
     }
 
     private function formatPublicProduct(Produk $produk, bool $includeDetail = false): array

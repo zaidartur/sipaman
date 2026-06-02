@@ -8,14 +8,14 @@
             <p class="eyebrow text-[11px] font-600 text-secondary">Direktori PIRT</p>
             <h1 class="font-display mt-2 text-4xl font-700 text-ink md:text-5xl">Katalog Produk PIRT</h1>
             <p class="mt-3 max-w-2xl leading-7 text-on-surface-variant">Cari produk yang sudah terverifikasi berdasarkan nama, kecamatan, dan pelaku usaha.</p>
-            <form class="mt-8 grid gap-2.5 rounded-3xl border border-outline-variant bg-white p-2.5 shadow-lift md:grid-cols-[1fr_200px_200px_auto]" method="GET" action="{{ route('products.index') }}">
+            <form class="mt-8 grid gap-2.5 rounded-3xl border border-outline-variant bg-white p-2.5 shadow-lift md:grid-cols-[1fr_200px_200px_auto]" method="GET" action="{{ route('products.index') }}" autocomplete="off">
                 <label class="flex items-center gap-2 rounded-2xl bg-surface-container-low px-3.5 focus-within:bg-primary-soft">
                     <span class="material-symbols-outlined text-primary">search</span>
-                    <input class="w-full border-0 bg-transparent py-3.5 text-on-surface placeholder:text-on-surface-variant focus:ring-0" type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama produk...">
+                    <input class="w-full border-0 bg-transparent py-3.5 text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-0" type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama produk..." autocomplete="off">
                 </label>
                 <label class="flex items-center gap-2 rounded-2xl bg-surface-container-low px-3.5 focus-within:bg-primary-soft">
                     <span class="material-symbols-outlined text-primary">location_on</span>
-                    <select class="w-full border-0 bg-transparent py-3.5 text-on-surface focus:ring-0" name="kecamatan_id">
+                    <select class="w-full rounded-xl border-0 bg-transparent py-3.5 text-on-surface transition focus:outline-none focus:ring-2 focus:ring-primary/25" name="kecamatan_id">
                         <option value="">Semua Kecamatan</option>
                         @foreach($kecamatans as $kecamatan)
                             <option value="{{ $kecamatan->id }}" @selected((string) request('kecamatan_id') === (string) $kecamatan->id)>{{ $kecamatan->nama_kecamatan }}</option>
@@ -24,7 +24,7 @@
                 </label>
                 <label class="flex items-center gap-2 rounded-2xl bg-surface-container-low px-3.5 focus-within:bg-primary-soft">
                     <span class="material-symbols-outlined text-primary">category</span>
-                    <select class="w-full border-0 bg-transparent py-3.5 text-on-surface focus:ring-0" name="jenis_barang_id">
+                    <select class="w-full rounded-xl border-0 bg-transparent py-3.5 text-on-surface transition focus:outline-none focus:ring-2 focus:ring-primary/25" name="jenis_barang_id">
                         <option value="">Semua Jenis</option>
                         @foreach(($jenisBarangs ?? []) as $jenisBarang)
                             <option value="{{ $jenisBarang->id }}" @selected((string) request('jenis_barang_id') === (string) $jenisBarang->id)>{{ $jenisBarang->nama_jenis }}</option>

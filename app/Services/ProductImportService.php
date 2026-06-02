@@ -64,6 +64,8 @@ class ProductImportService
         $berhasil = method_exists($import, 'getBerhasil') ? $import->getBerhasil() : 0;
         $gagal = method_exists($import, 'getGagal') ? $import->getGagal() : 0;
         $failures = method_exists($import, 'getFailureDetails') ? $import->getFailureDetails() : [];
+        $warningCount = method_exists($import, 'getWarningCount') ? $import->getWarningCount() : 0;
+        $warnings = method_exists($import, 'getWarningDetails') ? $import->getWarningDetails() : [];
         $userBaruDibuat = method_exists($import, 'getUserBaruDibuat') ? $import->getUserBaruDibuat() : 0;
 
         $this->createImportLog(
@@ -71,9 +73,7 @@ class ProductImportService
             tipeFile: $tipeFile,
             berhasil: $berhasil,
             gagal: $gagal,
-            keterangan: $gagal > 0
-                ? "Tipe {$tipeFile}: {$gagal} baris gagal / tidak valid."
-                : "Tipe {$tipeFile}: semua baris berhasil diimpor."
+            keterangan: $this->importDescription($tipeFile, $gagal, $warningCount)
         );
 
         return [
@@ -84,8 +84,29 @@ class ProductImportService
             'berhasil' => $berhasil,
             'gagal' => $gagal,
             'user_baru_dibuat' => $userBaruDibuat,
+            'warning_count' => $warningCount,
+            'warnings' => $warnings,
             'failures' => $failures,
         ];
+    }
+
+    private function importDescription(string $tipeFile, int $gagal, int $warningCount): string
+    {
+        $messages = [];
+
+        if ($gagal > 0) {
+            $messages[] = "{$gagal} baris gagal / tidak valid";
+        }
+
+        if ($warningCount > 0) {
+            $messages[] = "{$warningCount} baris perlu review jenis pangan";
+        }
+
+        if ($messages === []) {
+            return "Tipe {$tipeFile}: semua baris berhasil diimpor.";
+        }
+
+        return "Tipe {$tipeFile}: ".implode(', ', $messages).'.';
     }
 
     private function createImportLog(

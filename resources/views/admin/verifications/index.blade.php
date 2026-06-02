@@ -25,7 +25,7 @@
         @endif
         <form action="{{ route('panel.verifications.import') }}" method="POST" enctype="multipart/form-data" class="mt-5 flex flex-col gap-3 md:flex-row md:items-center" data-loading-form data-loading-message="Memproses import Status Pemenuhan Komitmen...">
             @csrf
-            <input type="file" name="file" accept=".xlsx,.xls,.csv" required class="block w-full rounded-lg border border-slate-300 text-sm file:mr-4 file:border-0 file:bg-slate-100 file:px-4 file:py-2 file:font-semibold">
+            <input type="file" name="file" accept=".xlsx,.xls,.csv" required class="form-file-sipaman">
             <button class="rounded-lg bg-blue-700 px-5 py-2 font-semibold text-white">Import Status</button>
         </form>
     </div>
@@ -39,10 +39,19 @@
                 @endforeach
             </div>
         </div>
-        <form method="GET" action="{{ route('panel.verifications.index') }}" class="mt-5 flex gap-3">
+        <form method="GET" action="{{ route('panel.verifications.index') }}" autocomplete="off" class="mt-5 grid gap-3 {{ $tab === 'proses' ? 'md:grid-cols-[1fr_repeat(4,150px)_auto]' : 'md:grid-cols-[1fr_auto]' }}">
             <input type="hidden" name="tab" value="{{ $tab }}">
-            <input type="search" name="search" value="{{ request('search') }}" placeholder="Cari produk / No SPPIRT..." class="w-full rounded-lg border-slate-300">
-            <button class="rounded-lg border border-slate-300 px-4 py-2 font-semibold">Cari</button>
+            <input type="search" name="search" value="{{ request('search') }}" placeholder="Cari produk / No SPPIRT..." autocomplete="off" class="form-input-sipaman w-full">
+            @if ($tab === 'proses')
+                @foreach ($trackingFilterLabels as $field => $label)
+                    <select name="{{ $field }}" class="form-select-sipaman">
+                        <option value="">{{ $label }}: Semua</option>
+                        <option value="1" @selected(($trackingFilters[$field] ?? null) === '1')>{{ $label }}: Ya</option>
+                        <option value="0" @selected(($trackingFilters[$field] ?? null) === '0')>{{ $label }}: Tidak</option>
+                    </select>
+                @endforeach
+            @endif
+            <button class="rounded-lg border border-slate-300 px-4 py-2 font-semibold">Filter</button>
         </form>
         <div class="panel-table-wrapper">
             <table class="panel-table">
@@ -53,7 +62,10 @@
                         <tr>
                             <td><div class="font-semibold">{{ $product->nama_branding }}</div><div class="text-xs text-slate-500">{{ $product->no_sppirt }}</div></td>
                             <td class="text-xs text-slate-600">
-                                Produk: {{ $v?->verifikasi_produk ? '✓' : '×' }} · Label: {{ $v?->verifikasi_label ? '✓' : '×' }} · PKP: {{ $v?->pkp ? '✓' : '×' }} · CPPOB: {{ $v?->cppob_pemeriksaan_sarana ? '✓' : '×' }}
+                                Produk: {{ $v?->verifikasi_produk ? 'Ya' : 'Tidak' }} /
+                                Label: {{ $v?->verifikasi_label ? 'Ya' : 'Tidak' }} /
+                                PKP: {{ $v?->pkp ? 'Ya' : 'Tidak' }} /
+                                CPPOB: {{ $v?->cppob_pemeriksaan_sarana ? 'Ya' : 'Tidak' }}
                             </td>
                             <td>@if($product->is_verified)<x-badge-status status="terverifikasi">Terverifikasi</x-badge-status>@elseif($v)<x-badge-status status="proses">Proses</x-badge-status>@else<x-badge-status status="belum_terverifikasi">Belum</x-badge-status>@endif</td>
                             <td>{{ $v?->verifikator?->nama ?? '-' }}</td>

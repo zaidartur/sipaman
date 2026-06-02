@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web\Public;
 
 use App\Http\Controllers\Controller;
+use App\Models\Kecamatan;
 use App\Models\Produk;
 use App\Services\LandingPageContentService;
 use Illuminate\Support\Collection;
@@ -25,10 +26,14 @@ class HomeController extends Controller
             ? Produk::verified()->with(['kecamatan', 'gambarUtama'])->latest()->limit(6)->get()
             : new Collection();
 
+        $kecamatans = Schema::hasTable('kecamatans')
+            ? Kecamatan::orderBy('nama_kecamatan')->get()
+            : new Collection();
+
         $homeStats = Schema::hasTable('produks')
             ? [
                 'verified_products' => Produk::verified()->count(),
-                'districts' => 17,
+                'districts' => $kecamatans->count(),
                 'umkm' => Produk::verified()
                     ->whereNotNull('nama_pelaku_usaha')
                     ->distinct('nama_pelaku_usaha')
@@ -36,10 +41,10 @@ class HomeController extends Controller
             ]
             : [
                 'verified_products' => 0,
-                'districts' => 17,
+                'districts' => $kecamatans->count(),
                 'umkm' => 0,
             ];
 
-        return view('public.home', compact('contents', 'featuredProducts', 'homeStats'));
+        return view('public.home', compact('contents', 'featuredProducts', 'homeStats', 'kecamatans'));
     }
 }

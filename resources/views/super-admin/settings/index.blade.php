@@ -85,7 +85,7 @@
                                             type="file"
                                             name="logo"
                                             accept=".jpg,.jpeg,.png,.webp"
-                                            class="block w-full rounded-lg border border-slate-300 bg-white text-sm file:mr-4 file:border-0 file:bg-slate-100 file:px-4 file:py-2 file:font-semibold file:text-slate-700 hover:file:bg-slate-200"
+                                            class="form-file-sipaman"
                                         >
                                     </div>
                                     @error('logo')<p class="mt-1 text-sm text-red-700">{{ $message }}</p>@enderror
@@ -98,7 +98,7 @@
                                             name="{{ $fieldName }}"
                                             value="1"
                                             @checked((string) $value === '1')
-                                            class="rounded border-slate-300 text-slate-900 focus:ring-slate-900"
+                                            class="form-checkbox-sipaman"
                                         >
                                         Aktif
                                     </label>
@@ -108,7 +108,7 @@
                                         id="setting-{{ $setting->id }}"
                                         name="{{ $fieldName }}"
                                         rows="3"
-                                        class="mt-2 w-full rounded-lg border-slate-300 bg-white text-sm"
+                                        class="form-textarea-sipaman mt-2 w-full"
                                     >{{ $value }}</textarea>
                                     @error($errorKey)<p class="mt-1 text-sm text-red-700">{{ $message }}</p>@enderror
                                 @else
@@ -119,7 +119,7 @@
                                         value="{{ $value }}"
                                         @if ($inputType === 'number') min="{{ $meta['min'] ?? 1 }}" max="{{ $meta['max'] ?? 100000 }}" step="1" @endif
                                         @if ($inputType === 'days_list') placeholder="30,14,7" @endif
-                                        class="mt-2 w-full rounded-lg border-slate-300 bg-white text-sm"
+                                        class="form-input-sipaman mt-2 w-full"
                                     >
                                     @error($errorKey)<p class="mt-1 text-sm text-red-700">{{ $message }}</p>@enderror
                                 @endif

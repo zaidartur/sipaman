@@ -13,15 +13,16 @@
                 </div>
             </div>
 
-            <form method="GET" action="{{ route('panel.import-logs.index') }}" class="mt-5 grid gap-3 md:grid-cols-[1fr_260px_auto]">
+            <form method="GET" action="{{ route('panel.import-logs.index') }}" autocomplete="off" class="mt-5 grid gap-3 md:grid-cols-[1fr_260px_auto]">
                 <input
                     type="search"
                     name="search"
                     value="{{ request('search') }}"
                     placeholder="Cari nama file atau keterangan..."
-                    class="rounded-lg border-slate-300 text-sm focus:border-slate-900 focus:ring-slate-900"
+                    autocomplete="off"
+                    class="form-input-sipaman"
                 >
-                <select name="tipe_file" class="rounded-lg border-slate-300 text-sm focus:border-slate-900 focus:ring-slate-900">
+                <select name="tipe_file" class="form-select-sipaman">
                     <option value="">Semua Jenis Import</option>
                     <option value="rekap_pirt" @selected(request('tipe_file') === 'rekap_pirt')>Rekap Data PIRT</option>
                     <option value="status_komitmen" @selected(request('tipe_file') === 'status_komitmen')>Status Pemenuhan Komitmen</option>

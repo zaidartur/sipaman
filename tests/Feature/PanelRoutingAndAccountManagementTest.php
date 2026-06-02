@@ -6,6 +6,7 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class PanelRoutingAndAccountManagementTest extends TestCase
@@ -73,6 +74,38 @@ class PanelRoutingAndAccountManagementTest extends TestCase
             ->assertSee($admin->nama)
             ->assertDontSee($pelakuUsaha->nama)
             ->assertDontSee($superAdmin->email);
+    }
+
+    public function test_super_admin_user_api_matches_web_admin_account_scope(): void
+    {
+        $superAdmin = $this->createUser('super_admin', 'super@example.test', 'Super Yang Login');
+        $admin = $this->createUser('admin', 'listed-admin@example.test', 'Admin Yang Tampil');
+        $pelakuUsaha = $this->createUser('user', null, 'Pelaku Yang Tidak Tampil', '1234567890123');
+        $normalAdmin = $this->createUser('admin', 'normal-admin@example.test', 'Normal Admin');
+
+        Sanctum::actingAs($normalAdmin);
+        $this->getJson('/api/super-admin/users')->assertForbidden();
+
+        Sanctum::actingAs($superAdmin);
+        $this->getJson('/api/super-admin/users')
+            ->assertOk()
+            ->assertJsonFragment(['email' => $admin->email])
+            ->assertJsonMissing(['nama' => $pelakuUsaha->nama])
+            ->assertJsonMissing(['email' => $superAdmin->email]);
+
+        $this->getJson("/api/super-admin/users/{$admin->id}")
+            ->assertOk()
+            ->assertJsonPath('data.email', $admin->email);
+
+        $this->getJson("/api/super-admin/users/{$pelakuUsaha->id}")
+            ->assertForbidden();
+
+        $this->patchJson("/api/super-admin/users/{$pelakuUsaha->id}", [
+            'status_akun' => 'nonaktif',
+        ])->assertForbidden();
+
+        $this->deleteJson("/api/super-admin/users/{$pelakuUsaha->id}")
+            ->assertForbidden();
     }
 
     private function createUser(string $roleName, ?string $email, string $name = 'User Test', ?string $nib = null): User

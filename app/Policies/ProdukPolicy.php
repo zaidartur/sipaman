@@ -19,16 +19,16 @@ class ProdukPolicy
 
     public function create(User $user): bool
     {
-        return $user->hasRole('admin', 'super_admin');
+        return false;
     }
 
     public function update(User $user, Produk $produk): bool
     {
-        return $user->hasRole('admin', 'super_admin');
+        return false;
     }
 
     public function delete(User $user, Produk $produk): bool
     {
-        return $user->hasRole('admin', 'super_admin');
+        return false;
     }
 }

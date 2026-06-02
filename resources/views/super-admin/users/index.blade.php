@@ -15,8 +15,8 @@
             <a href="{{ route('super-admin.users.create') }}" class="rounded-lg bg-slate-900 px-4 py-2 font-semibold text-white">Tambah Admin</a>
         </div>
 
-        <form method="GET" class="mt-5 grid gap-3 md:grid-cols-[1fr_auto]">
-            <input name="search" value="{{ request('search') }}" placeholder="Cari nama atau email admin" class="rounded-lg border-slate-300">
+        <form method="GET" autocomplete="off" class="mt-5 grid gap-3 md:grid-cols-[1fr_auto]">
+            <input name="search" value="{{ request('search') }}" placeholder="Cari nama atau email admin" autocomplete="off" class="form-input-sipaman">
             <button class="rounded-lg border px-4 py-2 font-semibold">Filter</button>
         </form>
 

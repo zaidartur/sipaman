@@ -68,23 +68,23 @@
             <div>
                 <label class="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700">
                     <input type="hidden" name="is_active" value="0">
-                    <input type="checkbox" name="is_active" value="1" @checked(old('is_active', $landingPage->is_active)) class="rounded border-slate-300 text-slate-900">
+                    <input type="checkbox" name="is_active" value="1" @checked(old('is_active', $landingPage->is_active)) class="form-checkbox-sipaman">
                     Tampilkan di website
                 </label>
 
                 <div class="mt-5 grid gap-4 md:grid-cols-2">
                     <div>
                         <label class="block text-sm font-semibold text-slate-700">Judul yang tampil di website</label>
-                        <input name="judul" value="{{ old('judul', $landingPage->judul) }}" class="mt-1 w-full rounded-lg border-slate-300">
+                        <input name="judul" value="{{ old('judul', $landingPage->judul) }}" class="form-input-sipaman mt-1 w-full">
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-slate-700">Teks kecil di bawah judul</label>
-                        <input name="subjudul" value="{{ old('subjudul', $landingPage->subjudul) }}" class="mt-1 w-full rounded-lg border-slate-300">
+                        <input name="subjudul" value="{{ old('subjudul', $landingPage->subjudul) }}" class="form-input-sipaman mt-1 w-full">
                     </div>
                 </div>
 
                 <label class="mt-4 block text-sm font-semibold text-slate-700">Deskripsi singkat</label>
-                <textarea name="konten" rows="6" class="mt-1 w-full rounded-lg border-slate-300">{{ old('konten', $landingPage->konten) }}</textarea>
+                <textarea name="konten" rows="6" class="form-textarea-sipaman mt-1 w-full">{{ old('konten', $landingPage->konten) }}</textarea>
 
                 @if ($allowsSecondaryButton)
                     <div class="mt-4 grid gap-4 lg:grid-cols-2">
@@ -93,17 +93,17 @@
                             <div class="mt-3 grid gap-4 md:grid-cols-2">
                                 <div>
                                     <label class="block text-sm font-semibold text-slate-700">Tulisan tombol utama</label>
-                                    <input name="button_text" value="{{ old('button_text', $landingPage->button_text) }}" class="mt-1 w-full rounded-lg border-slate-300" placeholder="Contoh: Lihat Produk">
+                                    <input name="button_text" value="{{ old('button_text', $landingPage->button_text) }}" class="form-input-sipaman mt-1 w-full" placeholder="Contoh: Lihat Produk">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-semibold text-slate-700">Tujuan tombol utama</label>
-                                    <select name="button_url_type" data-button-url-select class="mt-1 w-full rounded-lg border-slate-300">
+                                    <select name="button_url_type" data-button-url-select class="form-select-sipaman mt-1 w-full">
                                         @foreach($buttonOptions as $key => $option)
                                             <option value="{{ $key }}" @selected($buttonType === $key)>{{ $option['label'] }}</option>
                                         @endforeach
                                     </select>
                                     <div data-custom-url-field class="{{ $buttonType === 'custom' ? '' : 'hidden' }}">
-                                        <input name="custom_button_url" value="{{ $customButtonUrl }}" class="mt-2 w-full rounded-lg border-slate-300" placeholder="Contoh: /products atau https://contoh.go.id">
+                                        <input name="custom_button_url" value="{{ $customButtonUrl }}" class="form-input-sipaman mt-2 w-full" placeholder="Contoh: /products atau https://contoh.go.id">
                                         <p class="mt-1 text-xs text-slate-500">Link khusus harus diawali http://, https://, /, atau #.</p>
                                     </div>
                                 </div>
@@ -115,17 +115,17 @@
                             <div class="mt-3 grid gap-4 md:grid-cols-2">
                                 <div>
                                     <label class="block text-sm font-semibold text-slate-700">Tulisan tombol kedua</label>
-                                    <input name="secondary_button_text" value="{{ old('secondary_button_text', $landingPage->secondary_button_text) }}" class="mt-1 w-full rounded-lg border-slate-300" placeholder="Contoh: Lihat UMKM">
+                                    <input name="secondary_button_text" value="{{ old('secondary_button_text', $landingPage->secondary_button_text) }}" class="form-input-sipaman mt-1 w-full" placeholder="Contoh: Lihat UMKM">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-semibold text-slate-700">Tujuan tombol kedua</label>
-                                    <select name="secondary_button_url_type" data-button-url-select class="mt-1 w-full rounded-lg border-slate-300">
+                                    <select name="secondary_button_url_type" data-button-url-select class="form-select-sipaman mt-1 w-full">
                                         @foreach($buttonOptions as $key => $option)
                                             <option value="{{ $key }}" @selected($secondaryButtonType === $key)>{{ $option['label'] }}</option>
                                         @endforeach
                                     </select>
                                     <div data-custom-url-field class="{{ $secondaryButtonType === 'custom' ? '' : 'hidden' }}">
-                                        <input name="secondary_custom_button_url" value="{{ $secondaryCustomButtonUrl }}" class="mt-2 w-full rounded-lg border-slate-300" placeholder="Contoh: /umkm atau https://contoh.go.id">
+                                        <input name="secondary_custom_button_url" value="{{ $secondaryCustomButtonUrl }}" class="form-input-sipaman mt-2 w-full" placeholder="Contoh: /umkm atau https://contoh.go.id">
                                         <p class="mt-1 text-xs text-slate-500">Link khusus harus diawali http://, https://, /, atau #.</p>
                                     </div>
                                 </div>
@@ -136,17 +136,17 @@
                     <div class="mt-4 grid gap-4 md:grid-cols-2">
                         <div>
                             <label class="block text-sm font-semibold text-slate-700">Tulisan pada tombol</label>
-                            <input name="button_text" value="{{ old('button_text', $landingPage->button_text) }}" class="mt-1 w-full rounded-lg border-slate-300" placeholder="Contoh: Lihat Produk">
+                            <input name="button_text" value="{{ old('button_text', $landingPage->button_text) }}" class="form-input-sipaman mt-1 w-full" placeholder="Contoh: Lihat Produk">
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-slate-700">Tujuan tombol</label>
-                            <select name="button_url_type" data-button-url-select class="mt-1 w-full rounded-lg border-slate-300">
+                            <select name="button_url_type" data-button-url-select class="form-select-sipaman mt-1 w-full">
                                 @foreach($buttonOptions as $key => $option)
                                     <option value="{{ $key }}" @selected($buttonType === $key)>{{ $option['label'] }}</option>
                                 @endforeach
                             </select>
                             <div data-custom-url-field class="{{ $buttonType === 'custom' ? '' : 'hidden' }}">
-                                <input name="custom_button_url" value="{{ $customButtonUrl }}" class="mt-2 w-full rounded-lg border-slate-300" placeholder="Contoh: /products atau https://contoh.go.id">
+                                <input name="custom_button_url" value="{{ $customButtonUrl }}" class="form-input-sipaman mt-2 w-full" placeholder="Contoh: /products atau https://contoh.go.id">
                                 <p class="mt-1 text-xs text-slate-500">Link khusus harus diawali http://, https://, /, atau #.</p>
                             </div>
                         </div>
@@ -157,19 +157,19 @@
                     <div class="mt-4 grid gap-4 md:grid-cols-2">
                         <div>
                             <label class="block text-sm font-semibold text-slate-700">Gambar Banner Utama</label>
-                            <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp" class="mt-1 block w-full rounded-lg border border-slate-300 text-sm file:mr-4 file:border-0 file:bg-slate-100 file:px-4 file:py-2 file:font-semibold file:text-slate-700 hover:file:bg-slate-200">
+                            <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp" class="form-file-sipaman mt-1">
                             <p class="mt-1 text-xs text-slate-500">Gunakan gambar JPG/PNG/WebP maksimal 2 MB. Rekomendasi rasio 4:3 atau 16:9.</p>
 
                             @if ($landingPage->image_url)
                                 <label class="mt-3 flex items-center gap-2 text-sm font-semibold text-red-700">
-                                    <input type="checkbox" name="remove_image" value="1" class="rounded border-slate-300 text-red-600">
+                                    <input type="checkbox" name="remove_image" value="1" class="form-checkbox-sipaman text-red-600">
                                     Hapus gambar saat disimpan
                                 </label>
                             @endif
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-slate-700">Keterangan gambar</label>
-                            <input name="image_alt" value="{{ old('image_alt', $landingPage->image_alt) }}" class="mt-1 w-full rounded-lg border-slate-300" placeholder="Contoh: Produk PIRT Karanganyar">
+                            <input name="image_alt" value="{{ old('image_alt', $landingPage->image_alt) }}" class="form-input-sipaman mt-1 w-full" placeholder="Contoh: Produk PIRT Karanganyar">
                             <p class="mt-1 text-xs text-slate-500">Isi singkat agar gambar mudah dipahami saat tidak tampil.</p>
                         </div>
                     </div>

@@ -3,6 +3,7 @@
 namespace App\Imports;
 
 use App\Models\Produk;
+use App\Support\KecamatanResolver;
 use App\Support\ProductTypeClassifier;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -37,6 +38,10 @@ class ProdukImport implements SkipsEmptyRows, ToCollection, WithStartRow
 
     private array $failureDetails = [];
 
+    private int $warningCount = 0;
+
+    private array $warningDetails = [];
+
     /** Data asli mulai dari baris 5. */
     public function startRow(): int
     {
@@ -46,6 +51,7 @@ class ProdukImport implements SkipsEmptyRows, ToCollection, WithStartRow
     public function collection(Collection $rows): void
     {
         $classifier = app(ProductTypeClassifier::class);
+        $kecamatanResolver = app(KecamatanResolver::class);
 
         foreach ($rows as $index => $row) {
             $row = $row->toArray();
@@ -94,13 +100,24 @@ class ProdukImport implements SkipsEmptyRows, ToCollection, WithStartRow
                 }
 
                 // jenis_pangan asli tetap disimpan di produk, sedangkan
-                // jenis_barang_id diarahkan ke kategori tampilan yang sudah
-                // dinormalisasi agar filter publik/admin tidak berisi ratusan
-                // variasi mentah dari Excel.
+                // jenis_barang_id diarahkan ke master resmi jenis_barangs.
                 $jenisBarang = $classifier->resolve($kategoriPangan, $jenisPangan);
+                $kecamatan = $kecamatanResolver->resolve($wilayah, $alamat);
 
                 // Cek apakah produk sudah ada
                 $produkExisting = Produk::where('no_sppirt', $noSppirt)->first();
+
+                if ($jenisBarang?->nama_jenis === ProductTypeClassifier::FALLBACK_CATEGORY) {
+                    $this->addWarning(
+                        $barisExcel,
+                        'jenis_pangan',
+                        'Jenis pangan belum cocok dengan master resmi dan masuk Perlu Review.',
+                        [
+                            'kategori_pangan' => $kategoriPangan,
+                            'jenis_pangan' => $jenisPangan,
+                        ]
+                    );
+                }
 
                 $dataUpdate = [
                     'nama_branding' => $namaBranding,
@@ -109,7 +126,7 @@ class ProdukImport implements SkipsEmptyRows, ToCollection, WithStartRow
                     'kemasan' => $kemasan,
                     'cara_penyimpanan' => $caraPenyimpanan,
                     'wilayah' => $wilayah,
-                    'kecamatan_id' => null, // File rekap tidak punya kolom kecamatan
+                    'kecamatan_id' => $kecamatan?->id ?? $produkExisting?->kecamatan_id,
                     'jenis_barang_id' => $jenisBarang?->id,
                     'nama_pelaku_usaha' => $namaPelakuUsaha,
                     'alamat' => $alamat,
@@ -151,6 +168,16 @@ class ProdukImport implements SkipsEmptyRows, ToCollection, WithStartRow
     public function getFailureDetails(): array
     {
         return $this->failureDetails;
+    }
+
+    public function getWarningCount(): int
+    {
+        return $this->warningCount;
+    }
+
+    public function getWarningDetails(): array
+    {
+        return $this->warningDetails;
     }
 
     // ── Private helpers ───────────────────────────────────────
@@ -218,6 +245,17 @@ class ProdukImport implements SkipsEmptyRows, ToCollection, WithStartRow
             'kolom' => $kolom,
             'errors' => [$message],
             'nilai' => $row,
+        ];
+    }
+
+    private function addWarning(int $baris, string $kolom, string $message, array $nilai): void
+    {
+        $this->warningCount++;
+        $this->warningDetails[] = [
+            'baris' => $baris,
+            'kolom' => $kolom,
+            'message' => $message,
+            'nilai' => $nilai,
         ];
     }
 }

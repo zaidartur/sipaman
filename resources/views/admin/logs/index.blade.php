@@ -10,8 +10,8 @@
         </div>
     </div>
 
-    <form method="GET" class="mt-5 grid gap-3 md:grid-cols-[1fr_auto]">
-        <input name="search" value="{{ request('search') }}" placeholder="Cari nama, NIB, email admin, aktivitas, atau IP" class="rounded-lg border-slate-300">
+    <form method="GET" autocomplete="off" class="mt-5 grid gap-3 md:grid-cols-[1fr_auto]">
+        <input name="search" value="{{ request('search') }}" placeholder="Cari nama, NIB, email admin, aktivitas, atau IP" autocomplete="off" class="form-input-sipaman">
         <button class="rounded-lg border border-slate-300 px-4 py-2 font-semibold">Cari</button>
     </form>
 

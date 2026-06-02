@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\ImportCommitmentStatusRequest;
 use App\Models\ImportLog;
 use App\Models\Produk;
 use App\Services\ProductImportService;
+use App\Services\ProductVerificationQueryService;
 use App\Support\SystemSettings;
 use App\Traits\LogsAuditTrail;
 use Illuminate\Http\RedirectResponse;
@@ -17,35 +18,25 @@ class ProductVerificationController extends Controller
 {
     use LogsAuditTrail;
 
-    public function __construct(private ProductImportService $productImportService)
-    {
-    }
+    public function __construct(
+        private ProductImportService $productImportService,
+        private ProductVerificationQueryService $verificationQueryService,
+    ) {}
 
     public function index(Request $request): View
     {
-        $tab = $request->query('tab', 'semua');
+        $filters = $request->query();
+        $tab = $this->verificationQueryService->resolveTab($filters);
+        $trackingFilters = $this->verificationQueryService->resolveTrackingFilters($filters, $tab);
 
-        $query = Produk::with(['kecamatan', 'verifikasi.verifikator', 'commitmentStatus']);
-
-        match ($tab) {
-            'terverifikasi' => $query->where('is_verified', true),
-            'belum' => $query->where('is_verified', false)->whereDoesntHave('verifikasi'),
-            'proses' => $query->where('is_verified', false)->whereHas('verifikasi'),
-            default => null,
-        };
-
-        $products = $query
+        $products = $this->verificationQueryService
+            ->query($tab, $trackingFilters)
             ->search($request->query('search'))
             ->latest()
             ->paginate(SystemSettings::pagination())
             ->withQueryString();
 
-        $stats = [
-            'total' => Produk::count(),
-            'terverifikasi' => Produk::where('is_verified', true)->count(),
-            'belum' => Produk::where('is_verified', false)->whereDoesntHave('verifikasi')->count(),
-            'proses' => Produk::where('is_verified', false)->whereHas('verifikasi')->count(),
-        ];
+        $stats = $this->verificationQueryService->stats();
 
         $lastImport = ImportLog::with('user')
             ->where(function ($query) {
@@ -55,7 +46,14 @@ class ProductVerificationController extends Controller
             ->latest('imported_at')
             ->first();
 
-        return view('admin.verifications.index', compact('products', 'stats', 'lastImport', 'tab'));
+        return view('admin.verifications.index', [
+            'products' => $products,
+            'stats' => $stats,
+            'lastImport' => $lastImport,
+            'tab' => $tab,
+            'trackingFilters' => $trackingFilters,
+            'trackingFilterLabels' => $this->verificationQueryService->trackingFilterLabels(),
+        ]);
     }
 
     public function import(ImportCommitmentStatusRequest $request): RedirectResponse

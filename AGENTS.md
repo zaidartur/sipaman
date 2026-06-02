@@ -241,21 +241,21 @@ Admin routes use middleware:
 Prefix/name:
 
 ```text
-/admin
-admin.*
+/panel
+panel.*
 ```
 
 Current admin routes:
 
 - Dashboard
-- `admin.products.index/show` only; product data is read-only from the admin UI
+- `panel.products.index/show` only; product data is read-only from the admin UI
 - Rekap PIRT import
-- Dedicated product image management page under `admin.product-images.*`
+- Dedicated product image management page under `panel.product-images.*`
 - Verifications index/import/read-only detail
-- `admin.jenis-barang.*` resource except show
+- `panel.jenis-barang.*` resource except show
 - Jenis Barang review page for `Lainnya / Perlu Review`
 - Jenis Barang sync action to reclassify existing products
-- Admin pelaku usaha account management under `admin.pelaku-usaha.*`
+- Admin pelaku usaha account management under `panel.pelaku-usaha.*`
 - Landing page index/edit/update
 - Activity logs
 - Import logs
@@ -284,7 +284,7 @@ Current super admin routes:
 
 Auth API:
 
-- `POST /api/auth/register` returns 403 because self-registration is disabled.
+- `POST /api/auth/register` is not registered because self-registration is disabled.
 - `POST /api/auth/login`
 - Protected by Sanctum:
   - `POST /api/auth/logout`
@@ -504,7 +504,7 @@ Current code has:
 - `app/Models/JenisBarang.php`
 - `app/Models/JenisBarangAlias.php`
 - `app/Support/ProductTypeClassifier.php`
-- `database/migrations/2026_05_29_000001_add_normalization_fields_to_jenis_barangs_table.php`
+- `database/migrations/2026_06_02_000002_add_official_fields_to_jenis_barangs_table.php`
 - `database/migrations/2026_05_29_000002_create_jenis_barang_aliases_table.php`
 - `database/seeders/JenisBarangSeeder.php`
 
@@ -682,7 +682,6 @@ Current image files:
 - `app/Models/GambarProduk.php`
 - `app/Services/ProductImageService.php`
 - `app/Http/Requests/Admin/StoreProductImageRequest.php`
-- `Web/Admin/ProductImageController.php`
 - `Api/Admin/ProductImageController.php`
 - `Web/User/ProductSettingController.php`
 - `Api/User/ProductImageController.php`
@@ -789,7 +788,6 @@ Main admin files:
 - `Web/Admin/ProductController.php`
 - `Web/Admin/ProductImageManagementController.php`
 - `Web/Admin/ProductImportController.php`
-- `Web/Admin/ProductImageController.php`
 - `Web/Admin/PelakuUsahaAccountController.php`
 - `Web/Admin/ProductVerificationController.php`
 - `Web/Admin/JenisBarangController.php`
@@ -831,10 +829,10 @@ Current implementation:
 
 - Admin product data from the **Produk** menu is read-only. Admin/super admin may list, search, filter, view detail, and import Rekap PIRT, but must not create, edit, update, or delete official product records manually.
 - Admin product create/update/delete web routes and API routes are not part of the active route map. Keep old views/controllers unused unless deliberately reviewed.
-- `admin.product-images.*` provides the operational **Gambar Produk** page for admin and super admin, scoped to verified products only.
-- `admin.pelaku-usaha.*` lets admin/super admin manage only role `user` / pelaku usaha accounts.
-- Legacy `resources/views/admin/users/*` remain unused; do not wire them without review.
-- `Api/Admin/UserManagementController.php` still exists as an API controller but current API routes do not register broad admin user management.
+- `panel.product-images.*` provides the operational **Gambar Produk** page for admin and super admin, scoped to verified products only.
+- `panel.pelaku-usaha.*` lets admin/super admin manage only role `user` / pelaku usaha accounts.
+- Legacy admin user/category/UMKM views from older snapshots are not present in the current filesystem. Do not recreate or wire them without a fresh feature request and route/controller review.
+- Broad admin-scope user management API is not registered; pelaku usaha account management lives under the shared web panel, while super-admin admin-account management lives under `/super-admin`.
 
 Do not wire old/legacy files blindly. Inspect and adapt them or build a clean controller/request/view path.
 
@@ -888,8 +886,6 @@ Current files:
 - `Api/Admin/LandingPageController.php`
 - `app/Http/Requests/Admin/UpdateLandingPageRequest.php`
 - `database/migrations/2024_01_01_000011_create_landing_page_contents_table.php`
-- `database/migrations/2026_05_27_000002_add_dynamic_fields_to_landing_page_contents_table.php`
-- `database/migrations/2026_06_01_000001_add_secondary_button_to_landing_page_contents_table.php`
 - `database/seeders/LandingPageContentSeeder.php`
 - `resources/views/admin/landing-page/index.blade.php`
 - `resources/views/admin/landing-page/edit.blade.php`
@@ -1133,13 +1129,12 @@ Purpose:
 Files:
 
 - migration: `2024_01_01_000002_create_users_table.php`
-- migration: `2026_05_18_120000_add_nib_and_nullable_credentials_to_users_table.php`
 - model: `App\Models\User`
 
 Purpose:
 
 - Stores admins, super admins, and pelaku usaha accounts.
-- Supports nullable email/password after later migration.
+- Supports nullable email/password and unique nullable NIB in the base users migration.
 - Supports unique nullable NIB.
 
 Important helpers:
@@ -1170,7 +1165,7 @@ Purpose:
 Files:
 
 - migration: `2024_01_01_000004_create_jenis_barangs_table.php`
-- migration: `2026_05_29_000001_add_normalization_fields_to_jenis_barangs_table.php`
+- migration: `2026_06_02_000002_add_official_fields_to_jenis_barangs_table.php`
 - model: `App\Models\JenisBarang`
 
 Purpose:
@@ -1200,8 +1195,6 @@ Purpose:
 Files:
 
 - migration: `2024_01_01_000005_create_produks_table.php`
-- migration: `2026_05_18_000013_widen_produk_text_columns.php`
-- indexes: `2026_05_12_100001_add_indexes_for_performance.php`
 - model: `App\Models\Produk`
 
 Purpose:
@@ -1215,7 +1208,7 @@ Purpose:
 Files:
 
 - migration: `2024_01_01_000006_create_gambar_produks_table.php`
-- migration: `2026_05_31_000001_enforce_single_product_image.php`
+- migration: current `gambar_produks` schema already enforces one image per product with `gambar_produks_produk_id_unique`
 - model: `App\Models\GambarProduk`
 
 Purpose:
@@ -1231,7 +1224,6 @@ Rule:
 Files:
 
 - migration: `2024_01_01_000007_create_verifikasi_produks_table.php`
-- migration: `2026_05_18_100001_update_verifikasi_produks_table.php`
 - model: `App\Models\VerifikasiProduk`
 
 Purpose:
@@ -1243,7 +1235,6 @@ Purpose:
 Files:
 
 - migration: `2024_01_01_000008_create_import_logs_table.php`
-- migration: `2026_05_27_000001_add_tipe_file_to_import_logs_table.php`
 - model: `App\Models\ImportLog`
 
 Purpose:
@@ -1277,7 +1268,6 @@ Purpose:
 Files:
 
 - migration: `2024_01_01_000011_create_landing_page_contents_table.php`
-- migration: `2026_05_27_000002_add_dynamic_fields_to_landing_page_contents_table.php`
 - model: `App\Models\LandingPageContent`
 
 Purpose:
@@ -1340,16 +1330,19 @@ Methods:
 - `importRekapPirt(UploadedFile $file)`
 - `importCommitmentStatus(UploadedFile $file)`
 
-### `ProductVerificationService`
+### `ProductVerificationQueryService`
 
 Purpose:
 
-- Legacy/support service for verification status changes. Do not wire this to admin UI/API manual actions unless the business rule changes.
+- Builds read-only verification tab queries and tracking filters for the admin verification page.
+- Keeps verification list/filter logic out of the controller.
 
 Methods:
 
-- `update(Produk $produk, array $data)`
-- `reject(Produk $produk, ?string $catatan = null)`
+- `resolveTab(array $filters)`
+- `resolveTrackingFilters(array $filters, string $tab)`
+- `query(string $tab, array $trackingFilters)`
+- `stats()`
 
 Current rule: verification status changes must come from Status Pemenuhan Komitmen spreadsheet import, not manual web/API actions.
 
@@ -1404,13 +1397,13 @@ Admin requests:
 
 - `ImportProductRequest`
 - `ImportCommitmentStatusRequest`
-- `StoreProductRequest`
-- `UpdateProductRequest`
+- `ImportProductRequest`
+- `UpdateProductSupportRequest`
 - `StoreProductImageRequest`
 - `StoreJenisBarangRequest`
 - `UpdateJenisBarangRequest`
 - `UpdatePelakuUsahaAccountRequest`
-- `UpdateProductVerificationRequest`
+- `ImportCommitmentStatusRequest`
 - `UpdateLandingPageRequest`
 
 User requests:
@@ -1460,16 +1453,11 @@ Current implementation:
 
 ## 24. Legacy or possibly unused files
 
-These files exist but are not clearly wired into current `routes/web.php` or `routes/api.php`. Check references before editing or deleting:
+Current audit note: legacy admin/category/UMKM/user-management files from older snapshots are not present in the current filesystem and are not registered in `routes/web.php` or `routes/api.php`. Check references before editing or deleting any file that looks unused.
 
-- `app/Http/Controllers/Web/Admin/VerificationController.php`
-- `app/Http/Controllers/Web/Admin/ProductPageController.php`
-- `app/Http/Controllers/Api/Admin/ProdukAdminController.php`
-- `app/Http/Controllers/Api/Admin/SystemSettingController.php`
-- `app/Http/Controllers/Api/Admin/UserManagementController.php`
-- `resources/views/admin/categories/*`
-- `resources/views/admin/umkm/*`
-- `resources/views/admin/users/*`
+Known current candidate for review:
+
+- `resources/views/components/modal-delete.blade.php` currently has no active reference, but should only be removed after a final reference check in the same cleanup task.
 
 Rules:
 
@@ -1609,7 +1597,7 @@ Check/update:
 
 Check/update:
 
-1. route under `/admin`,
+1. route under `/panel` for shared admin/super-admin operations,
 2. middleware `role:admin,super_admin`,
 3. controller under `Web/Admin`,
 4. FormRequest for user role only,
@@ -1723,7 +1711,7 @@ The previously listed gaps for jenis barang filters, alias management, reclassif
 Remaining watch items:
 
 1. Legacy/possibly unused files listed in section 24 still exist and should not be wired without review.
-2. `Api/Admin/UserManagementController.php` still is not broadly registered in current API routes.
+2. Broad admin-scope user management API is not registered in current API routes.
 
 When fixing future gaps, update this file again if the code structure or rules change.
 
@@ -1753,6 +1741,12 @@ This appendix was generated from the current uploaded code snapshot. It helps fu
 
 Coverage note: the functional sections above define the main behavior and responsibilities. This appendix closes the remaining gap by listing all current `app/`, `database/`, and `resources/views/` files visible in the uploaded snapshot. Default Laravel framework infrastructure files are listed but should normally be edited only when a task explicitly touches framework behavior.
 
+### Console commands
+
+- `app/Console/Commands/BackfillProdukJenisBarang.php`
+- `app/Console/Commands/BackfillProdukKecamatan.php`
+- `app/Console/Commands/SendPirtExpiryNotifications.php`
+
 ### HTTP Controllers
 
 - `app/Http/Controllers/Api/Admin/LandingPageController.php`
@@ -1760,9 +1754,6 @@ Coverage note: the functional sections above define the main behavior and respon
 - `app/Http/Controllers/Api/Admin/ProductImageController.php`
 - `app/Http/Controllers/Api/Admin/ProductImportController.php`
 - `app/Http/Controllers/Api/Admin/ProductVerificationController.php`
-- `app/Http/Controllers/Api/Admin/ProdukAdminController.php`
-- `app/Http/Controllers/Api/Admin/SystemSettingController.php`
-- `app/Http/Controllers/Api/Admin/UserManagementController.php`
 - `app/Http/Controllers/Api/AuthController.php`
 - `app/Http/Controllers/Api/ProdukController.php`
 - `app/Http/Controllers/Api/SuperAdmin/AuditTrailController.php`
@@ -1777,12 +1768,11 @@ Coverage note: the functional sections above define the main behavior and respon
 - `app/Http/Controllers/Web/Admin/JenisBarangController.php`
 - `app/Http/Controllers/Web/Admin/LandingPageController.php`
 - `app/Http/Controllers/Web/Admin/LogController.php`
+- `app/Http/Controllers/Web/Admin/PelakuUsahaAccountController.php`
 - `app/Http/Controllers/Web/Admin/ProductController.php`
-- `app/Http/Controllers/Web/Admin/ProductImageController.php`
+- `app/Http/Controllers/Web/Admin/ProductImageManagementController.php`
 - `app/Http/Controllers/Web/Admin/ProductImportController.php`
-- `app/Http/Controllers/Web/Admin/ProductPageController.php`
 - `app/Http/Controllers/Web/Admin/ProductVerificationController.php`
-- `app/Http/Controllers/Web/Admin/VerificationController.php`
 - `app/Http/Controllers/Web/Auth/AuthenticatedSessionController.php`
 - `app/Http/Controllers/Web/Public/HomeController.php`
 - `app/Http/Controllers/Web/Public/ProductController.php`
@@ -1796,20 +1786,27 @@ Coverage note: the functional sections above define the main behavior and respon
 
 ### Form Requests
 
+- `app/Http/Requests/Auth/LoginRequest.php`
+- `app/Http/Requests/Auth/UpdateProfileRequest.php`
 - `app/Http/Requests/Admin/Concerns/HasImportSpreadsheetRules.php`
+- `app/Http/Requests/Admin/Concerns/ValidatesJenisBarangFields.php`
 - `app/Http/Requests/Admin/ImportCommitmentStatusRequest.php`
 - `app/Http/Requests/Admin/ImportProductRequest.php`
 - `app/Http/Requests/Admin/StoreJenisBarangRequest.php`
 - `app/Http/Requests/Admin/StoreProductImageRequest.php`
-- `app/Http/Requests/Admin/StoreProductRequest.php`
 - `app/Http/Requests/Admin/UpdateJenisBarangRequest.php`
 - `app/Http/Requests/Admin/UpdateLandingPageRequest.php`
-- `app/Http/Requests/Admin/UpdateProductRequest.php`
-- `app/Http/Requests/Admin/UpdateProductVerificationRequest.php`
+- `app/Http/Requests/Admin/UpdatePelakuUsahaAccountRequest.php`
 - `app/Http/Requests/SuperAdmin/StoreUserRequest.php`
 - `app/Http/Requests/SuperAdmin/UpdateSystemSettingGroupRequest.php`
 - `app/Http/Requests/SuperAdmin/UpdateSystemSettingRequest.php`
 - `app/Http/Requests/SuperAdmin/UpdateUserRequest.php`
+- `app/Http/Requests/User/UpdateProductSupportRequest.php`
+- `app/Http/Requests/User/UpdateUserPasswordRequest.php`
+
+### Jobs
+
+- `app/Jobs/SendPirtExpiryWarningWhatsApp.php`
 
 ### Middleware
 
@@ -1835,6 +1832,7 @@ Coverage note: the functional sections above define the main behavior and respon
 - `app/Models/Kecamatan.php`
 - `app/Models/LandingPageContent.php`
 - `app/Models/PirtCommitmentStatus.php`
+- `app/Models/PirtExpiryNotificationLog.php`
 - `app/Models/Produk.php`
 - `app/Models/Role.php`
 - `app/Models/SystemSetting.php`
@@ -1844,17 +1842,24 @@ Coverage note: the functional sections above define the main behavior and respon
 ### Services
 
 - `app/Services/DashboardStatisticService.php`
+- `app/Services/AuthenticationService.php`
 - `app/Services/JenisBarangManagementService.php`
 - `app/Services/LandingPageContentService.php`
+- `app/Services/PhoneNumberNormalizer.php`
+- `app/Services/PirtExpiryMessageRenderer.php`
+- `app/Services/PirtExpiryNotificationService.php`
+- `app/Services/PublicProductCatalogService.php`
 - `app/Services/ProductImageService.php`
 - `app/Services/ProductImportService.php`
-- `app/Services/ProductVerificationService.php`
+- `app/Services/ProductVerificationQueryService.php`
+- `app/Services/StarSenderClient.php`
 - `app/Services/SystemSettingService.php`
 
 ### Support classes
 
 - `app/Support/Imports/SpreadsheetFileResolver.php`
 - `app/Support/Imports/SpreadsheetTemplateValidator.php`
+- `app/Support/KecamatanResolver.php`
 - `app/Support/ProductTypeClassifier.php`
 - `app/Support/SystemSettingCatalog.php`
 - `app/Support/SystemSettings.php`
@@ -1903,21 +1908,16 @@ Coverage note: the functional sections above define the main behavior and respon
 - `database/migrations/2024_01_01_000010_create_activity_logs_table.php`
 - `database/migrations/2024_01_01_000011_create_landing_page_contents_table.php`
 - `database/migrations/2024_01_01_000012_create_pirt_commitment_statuses_table.php`
+- `database/migrations/2024_01_01_000013_create_personal_access_tokens_table.php`
 - `database/migrations/2026_05_12_065652_create_system_settings_table.php`
-- `database/migrations/2026_05_12_100001_add_indexes_for_performance.php`
-- `database/migrations/2026_05_18_000013_widen_produk_text_columns.php`
-- `database/migrations/2026_05_18_100001_update_verifikasi_produks_table.php`
-- `database/migrations/2026_05_18_120000_add_nib_and_nullable_credentials_to_users_table.php`
-- `database/migrations/2026_05_27_000001_add_tipe_file_to_import_logs_table.php`
-- `database/migrations/2026_05_27_000002_add_dynamic_fields_to_landing_page_contents_table.php`
-- `database/migrations/2026_05_29_000001_add_normalization_fields_to_jenis_barangs_table.php`
 - `database/migrations/2026_05_29_000002_create_jenis_barang_aliases_table.php`
-- `database/migrations/2026_05_31_000001_enforce_single_product_image.php`
-- `database/migrations/2026_06_01_000001_add_secondary_button_to_landing_page_contents_table.php`
+- `database/migrations/2026_06_02_000001_create_pirt_expiry_notification_logs_table.php`
+- `database/migrations/2026_06_02_000002_add_official_fields_to_jenis_barangs_table.php`
 
 ### Seeders
 
 - `database/seeders/DatabaseSeeder.php`
+- `database/seeders/data/pirt_jenis_pangan.php`
 - `database/seeders/JenisBarangSeeder.php`
 - `database/seeders/KecamatanSeeder.php`
 - `database/seeders/LandingPageContentSeeder.php`
@@ -1931,31 +1931,24 @@ Coverage note: the functional sections above define the main behavior and respon
 
 ### Blade views
 
-- `resources/views/admin/categories/create.blade.php`
-- `resources/views/admin/categories/edit.blade.php`
-- `resources/views/admin/categories/index.blade.php`
 - `resources/views/admin/dashboard.blade.php`
 - `resources/views/admin/import-logs/index.blade.php`
+- `resources/views/admin/jenis-barang/_form.blade.php`
 - `resources/views/admin/jenis-barang/create.blade.php`
 - `resources/views/admin/jenis-barang/edit.blade.php`
 - `resources/views/admin/jenis-barang/index.blade.php`
+- `resources/views/admin/jenis-barang/review.blade.php`
 - `resources/views/admin/landing-page/index.blade.php`
+- `resources/views/admin/landing-page/edit.blade.php`
 - `resources/views/admin/logs/index.blade.php`
-- `resources/views/admin/products/_form.blade.php`
-- `resources/views/admin/products/create.blade.php`
-- `resources/views/admin/products/edit.blade.php`
+- `resources/views/admin/pelaku-usaha/edit.blade.php`
+- `resources/views/admin/pelaku-usaha/index.blade.php`
+- `resources/views/admin/product-images/index.blade.php`
 - `resources/views/admin/products/index.blade.php`
 - `resources/views/admin/products/show.blade.php`
-- `resources/views/admin/umkm/create.blade.php`
-- `resources/views/admin/umkm/edit.blade.php`
-- `resources/views/admin/umkm/index.blade.php`
-- `resources/views/admin/users/create.blade.php`
-- `resources/views/admin/users/edit.blade.php`
-- `resources/views/admin/users/index.blade.php`
 - `resources/views/admin/verifications/show.blade.php`
 - `resources/views/admin/verifications/index.blade.php`
 - `resources/views/auth/login.blade.php`
-- `resources/views/auth/register.blade.php`
 - `resources/views/components/alert.blade.php`
 - `resources/views/components/badge-status.blade.php`
 - `resources/views/components/modal-delete.blade.php`
@@ -1987,6 +1980,9 @@ Coverage note: the functional sections above define the main behavior and respon
 
 ### Laravel bootstrap/infrastructure
 
+- `app/Console/Commands/BackfillProdukJenisBarang.php`
+- `app/Console/Commands/BackfillProdukKecamatan.php`
+- `app/Console/Commands/SendPirtExpiryNotifications.php`
 - `app/Console/Kernel.php`
 - `app/Exceptions/Handler.php`
 - `app/Http/Kernel.php`
@@ -1997,9 +1993,9 @@ Coverage note: the functional sections above define the main behavior and respon
 
 ---
 
-## Appendix A — Verified file inventory from current uploaded snapshot
+## Appendix A - Verified file inventory from current uploaded snapshot
 
-The current uploaded code snapshot contains **194 files** under `app/`, `routes/`, `resources/`, `database/`, and `composer.json`. Use this inventory to avoid guessing whether a file exists.
+This appendix is a maintained high-level inventory for the current working tree under `app/`, `routes/`, `resources/`, `database/`, and `composer.json`. Use it to avoid guessing whether a file exists, and still verify with `rg --files` before cleanup tasks.
 
 - `app/Console/Kernel.php`
 - `app/Exceptions/Handler.php`
@@ -2008,9 +2004,6 @@ The current uploaded code snapshot contains **194 files** under `app/`, `routes/
 - `app/Http/Controllers/Api/Admin/ProductImageController.php`
 - `app/Http/Controllers/Api/Admin/ProductImportController.php`
 - `app/Http/Controllers/Api/Admin/ProductVerificationController.php`
-- `app/Http/Controllers/Api/Admin/ProdukAdminController.php`
-- `app/Http/Controllers/Api/Admin/SystemSettingController.php`
-- `app/Http/Controllers/Api/Admin/UserManagementController.php`
 - `app/Http/Controllers/Api/AuthController.php`
 - `app/Http/Controllers/Api/ProdukController.php`
 - `app/Http/Controllers/Api/SuperAdmin/AuditTrailController.php`
@@ -2025,12 +2018,11 @@ The current uploaded code snapshot contains **194 files** under `app/`, `routes/
 - `app/Http/Controllers/Web/Admin/JenisBarangController.php`
 - `app/Http/Controllers/Web/Admin/LandingPageController.php`
 - `app/Http/Controllers/Web/Admin/LogController.php`
+- `app/Http/Controllers/Web/Admin/PelakuUsahaAccountController.php`
 - `app/Http/Controllers/Web/Admin/ProductController.php`
-- `app/Http/Controllers/Web/Admin/ProductImageController.php`
+- `app/Http/Controllers/Web/Admin/ProductImageManagementController.php`
 - `app/Http/Controllers/Web/Admin/ProductImportController.php`
-- `app/Http/Controllers/Web/Admin/ProductPageController.php`
 - `app/Http/Controllers/Web/Admin/ProductVerificationController.php`
-- `app/Http/Controllers/Web/Admin/VerificationController.php`
 - `app/Http/Controllers/Web/Auth/AuthenticatedSessionController.php`
 - `app/Http/Controllers/Web/Public/HomeController.php`
 - `app/Http/Controllers/Web/Public/ProductController.php`
@@ -2052,22 +2044,26 @@ The current uploaded code snapshot contains **194 files** under `app/`, `routes/
 - `app/Http/Middleware/TrustProxies.php`
 - `app/Http/Middleware/ValidateSignature.php`
 - `app/Http/Middleware/VerifyCsrfToken.php`
+- `app/Http/Requests/Auth/LoginRequest.php`
+- `app/Http/Requests/Auth/UpdateProfileRequest.php`
 - `app/Http/Requests/Admin/Concerns/HasImportSpreadsheetRules.php`
+- `app/Http/Requests/Admin/Concerns/ValidatesJenisBarangFields.php`
 - `app/Http/Requests/Admin/ImportCommitmentStatusRequest.php`
 - `app/Http/Requests/Admin/ImportProductRequest.php`
 - `app/Http/Requests/Admin/StoreJenisBarangRequest.php`
 - `app/Http/Requests/Admin/StoreProductImageRequest.php`
-- `app/Http/Requests/Admin/StoreProductRequest.php`
 - `app/Http/Requests/Admin/UpdateJenisBarangRequest.php`
 - `app/Http/Requests/Admin/UpdateLandingPageRequest.php`
-- `app/Http/Requests/Admin/UpdateProductRequest.php`
-- `app/Http/Requests/Admin/UpdateProductVerificationRequest.php`
+- `app/Http/Requests/Admin/UpdatePelakuUsahaAccountRequest.php`
 - `app/Http/Requests/SuperAdmin/StoreUserRequest.php`
 - `app/Http/Requests/SuperAdmin/UpdateSystemSettingGroupRequest.php`
 - `app/Http/Requests/SuperAdmin/UpdateSystemSettingRequest.php`
 - `app/Http/Requests/SuperAdmin/UpdateUserRequest.php`
+- `app/Http/Requests/User/UpdateProductSupportRequest.php`
+- `app/Http/Requests/User/UpdateUserPasswordRequest.php`
 - `app/Imports/PirtCommitmentStatusImport.php`
 - `app/Imports/ProdukImport.php`
+- `app/Jobs/SendPirtExpiryWarningWhatsApp.php`
 - `app/Models/ActivityLog.php`
 - `app/Models/AuditTrail.php`
 - `app/Models/GambarProduk.php`
@@ -2077,6 +2073,7 @@ The current uploaded code snapshot contains **194 files** under `app/`, `routes/
 - `app/Models/Kecamatan.php`
 - `app/Models/LandingPageContent.php`
 - `app/Models/PirtCommitmentStatus.php`
+- `app/Models/PirtExpiryNotificationLog.php`
 - `app/Models/Produk.php`
 - `app/Models/Role.php`
 - `app/Models/SystemSetting.php`
@@ -2092,14 +2089,22 @@ The current uploaded code snapshot contains **194 files** under `app/`, `routes/
 - `app/Providers/EventServiceProvider.php`
 - `app/Providers/RouteServiceProvider.php`
 - `app/Rules/ImportSpreadsheetFile.php`
+- `app/Services/AuthenticationService.php`
 - `app/Services/DashboardStatisticService.php`
+- `app/Services/JenisBarangManagementService.php`
 - `app/Services/LandingPageContentService.php`
+- `app/Services/PhoneNumberNormalizer.php`
+- `app/Services/PirtExpiryMessageRenderer.php`
+- `app/Services/PirtExpiryNotificationService.php`
+- `app/Services/PublicProductCatalogService.php`
 - `app/Services/ProductImageService.php`
 - `app/Services/ProductImportService.php`
-- `app/Services/ProductVerificationService.php`
+- `app/Services/ProductVerificationQueryService.php`
+- `app/Services/StarSenderClient.php`
 - `app/Services/SystemSettingService.php`
 - `app/Support/Imports/SpreadsheetFileResolver.php`
 - `app/Support/Imports/SpreadsheetTemplateValidator.php`
+- `app/Support/KecamatanResolver.php`
 - `app/Support/ProductTypeClassifier.php`
 - `app/Support/SystemSettingCatalog.php`
 - `app/Support/SystemSettings.php`
@@ -2121,16 +2126,13 @@ The current uploaded code snapshot contains **194 files** under `app/`, `routes/
 - `database/migrations/2024_01_01_000010_create_activity_logs_table.php`
 - `database/migrations/2024_01_01_000011_create_landing_page_contents_table.php`
 - `database/migrations/2024_01_01_000012_create_pirt_commitment_statuses_table.php`
+- `database/migrations/2024_01_01_000013_create_personal_access_tokens_table.php`
 - `database/migrations/2026_05_12_065652_create_system_settings_table.php`
-- `database/migrations/2026_05_12_100001_add_indexes_for_performance.php`
-- `database/migrations/2026_05_18_000013_widen_produk_text_columns.php`
-- `database/migrations/2026_05_18_100001_update_verifikasi_produks_table.php`
-- `database/migrations/2026_05_18_120000_add_nib_and_nullable_credentials_to_users_table.php`
-- `database/migrations/2026_05_27_000001_add_tipe_file_to_import_logs_table.php`
-- `database/migrations/2026_05_27_000002_add_dynamic_fields_to_landing_page_contents_table.php`
-- `database/migrations/2026_05_29_000001_add_normalization_fields_to_jenis_barangs_table.php`
 - `database/migrations/2026_05_29_000002_create_jenis_barang_aliases_table.php`
+- `database/migrations/2026_06_02_000001_create_pirt_expiry_notification_logs_table.php`
+- `database/migrations/2026_06_02_000002_add_official_fields_to_jenis_barangs_table.php`
 - `database/seeders/DatabaseSeeder.php`
+- `database/seeders/data/pirt_jenis_pangan.php`
 - `database/seeders/JenisBarangSeeder.php`
 - `database/seeders/KecamatanSeeder.php`
 - `database/seeders/LandingPageContentSeeder.php`
@@ -2138,34 +2140,26 @@ The current uploaded code snapshot contains **194 files** under `app/`, `routes/
 - `database/seeders/SystemSettingSeeder.php`
 - `database/seeders/UserSeeder.php`
 - `resources/css/app.css`
-- `resources/css/style.css`
 - `resources/js/app.js`
 - `resources/js/bootstrap.js`
-- `resources/views/admin/categories/create.blade.php`
-- `resources/views/admin/categories/edit.blade.php`
-- `resources/views/admin/categories/index.blade.php`
 - `resources/views/admin/dashboard.blade.php`
 - `resources/views/admin/import-logs/index.blade.php`
 - `resources/views/admin/jenis-barang/create.blade.php`
 - `resources/views/admin/jenis-barang/edit.blade.php`
 - `resources/views/admin/jenis-barang/index.blade.php`
+- `resources/views/admin/jenis-barang/review.blade.php`
+- `resources/views/admin/jenis-barang/_form.blade.php`
+- `resources/views/admin/landing-page/edit.blade.php`
 - `resources/views/admin/landing-page/index.blade.php`
 - `resources/views/admin/logs/index.blade.php`
-- `resources/views/admin/products/_form.blade.php`
-- `resources/views/admin/products/create.blade.php`
-- `resources/views/admin/products/edit.blade.php`
+- `resources/views/admin/pelaku-usaha/edit.blade.php`
+- `resources/views/admin/pelaku-usaha/index.blade.php`
+- `resources/views/admin/product-images/index.blade.php`
 - `resources/views/admin/products/index.blade.php`
 - `resources/views/admin/products/show.blade.php`
-- `resources/views/admin/umkm/create.blade.php`
-- `resources/views/admin/umkm/edit.blade.php`
-- `resources/views/admin/umkm/index.blade.php`
-- `resources/views/admin/users/create.blade.php`
-- `resources/views/admin/users/edit.blade.php`
-- `resources/views/admin/users/index.blade.php`
 - `resources/views/admin/verifications/show.blade.php`
 - `resources/views/admin/verifications/index.blade.php`
 - `resources/views/auth/login.blade.php`
-- `resources/views/auth/register.blade.php`
 - `resources/views/components/alert.blade.php`
 - `resources/views/components/badge-status.blade.php`
 - `resources/views/components/modal-delete.blade.php`

@@ -7,9 +7,20 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class JenisBarang extends Model
 {
-    protected $fillable = ['nama_jenis', 'slug', 'deskripsi', 'is_active'];
+    protected $fillable = [
+        'nama_jenis',
+        'slug',
+        'nomor_kategori',
+        'kategori_resmi',
+        'deskripsi',
+        'keterangan',
+        'status_pirt',
+        'dasar_hukum',
+        'is_active',
+    ];
 
     protected $casts = [
+        'nomor_kategori' => 'integer',
         'is_active' => 'boolean',
     ];
 

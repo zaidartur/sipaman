@@ -36,6 +36,23 @@
             </x-alert>
         @endif
 
+        @if (session('import_warnings') && count(session('import_warnings')) > 0)
+            <x-alert type="warning">
+                <div class="font-semibold">Sebagian jenis pangan perlu review master data. Contoh maksimal 5 baris:</div>
+                <ul class="mt-2 list-disc space-y-1 pl-5">
+                    @foreach (session('import_warnings') as $warning)
+                        <li>
+                            Baris {{ $warning['baris'] ?? '-' }}:
+                            {{ $warning['message'] ?? 'Jenis pangan belum cocok dengan master resmi.' }}
+                            @if (! empty($warning['nilai']['jenis_pangan']))
+                                <span class="text-slate-600">({{ $warning['nilai']['jenis_pangan'] }})</span>
+                            @endif
+                        </li>
+                    @endforeach
+                </ul>
+            </x-alert>
+        @endif
+
         {{-- Stats --}}
         <div class="grid gap-4 md:grid-cols-3">
             <div class="panel-card">
@@ -86,7 +103,7 @@
                         name="file"
                         accept=".xlsx,.xls,.csv"
                         required
-                        class="block w-full rounded-lg border border-slate-300 text-sm file:mr-4 file:border-0 file:bg-slate-100 file:px-4 file:py-2 file:font-semibold file:text-slate-700 hover:file:bg-slate-200"
+                        class="form-file-sipaman"
                     >
                     <button type="submit" class="shrink-0 rounded-lg bg-blue-700 px-5 py-2 font-semibold text-white hover:bg-blue-800">
                         Import Rekap PIRT
@@ -104,27 +121,28 @@
                 </div>
             </div>
 
-            <form method="GET" action="{{ route('panel.products.index') }}" class="mt-5 grid gap-3 md:grid-cols-[1fr_190px_190px_190px_auto]">
+            <form method="GET" action="{{ route('panel.products.index') }}" autocomplete="off" class="mt-5 grid gap-3 md:grid-cols-[1fr_190px_190px_190px_auto]">
                 <input
                     type="search"
                     name="search"
                     value="{{ request('search') }}"
                     placeholder="Cari nama produk, pelaku usaha, No SPPIRT..."
-                    class="rounded-lg border-slate-300 text-sm focus:border-slate-900 focus:ring-slate-900"
+                    autocomplete="off"
+                    class="form-input-sipaman"
                 >
-                <select name="kecamatan_id" class="rounded-lg border-slate-300 text-sm focus:border-slate-900 focus:ring-slate-900">
+                <select name="kecamatan_id" class="form-select-sipaman">
                     <option value="">Semua Kecamatan</option>
                     @foreach ($kecamatans as $kecamatan)
                         <option value="{{ $kecamatan->id }}" @selected((string) request('kecamatan_id') === (string) $kecamatan->id)>{{ $kecamatan->nama_kecamatan }}</option>
                     @endforeach
                 </select>
-                <select name="jenis_barang_id" class="rounded-lg border-slate-300 text-sm focus:border-slate-900 focus:ring-slate-900">
+                <select name="jenis_barang_id" class="form-select-sipaman">
                     <option value="">Semua Jenis</option>
                     @foreach ($jenisBarangs as $jenisBarang)
                         <option value="{{ $jenisBarang->id }}" @selected((string) request('jenis_barang_id') === (string) $jenisBarang->id)>{{ $jenisBarang->nama_jenis }}</option>
                     @endforeach
                 </select>
-                <select name="status" class="rounded-lg border-slate-300 text-sm focus:border-slate-900 focus:ring-slate-900">
+                <select name="status" class="form-select-sipaman">
                     <option value="">Semua Status</option>
                     <option value="verified" @selected(request('status') === 'verified')>Terverifikasi</option>
                     <option value="unverified" @selected(request('status') === 'unverified')>Belum Terverifikasi</option>

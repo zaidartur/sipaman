@@ -31,9 +31,9 @@
             </div>
         </div>
 
-        <form method="GET" class="mt-5 grid gap-3 md:grid-cols-[1fr_220px_auto]">
-            <input name="search" value="{{ request('search') }}" placeholder="Cari nama produk, No SPPIRT, atau pelaku usaha" class="rounded-lg border-slate-300">
-            <select name="image_status" class="rounded-lg border-slate-300">
+        <form method="GET" autocomplete="off" class="mt-5 grid gap-3 md:grid-cols-[1fr_220px_auto]">
+            <input name="search" value="{{ request('search') }}" placeholder="Cari nama produk, No SPPIRT, atau pelaku usaha" autocomplete="off" class="form-input-sipaman">
+            <select name="image_status" class="form-select-sipaman">
                 <option value="">Semua Status Gambar</option>
                 <option value="available" @selected(request('image_status') === 'available')>Sudah Ada Gambar</option>
                 <option value="missing" @selected(request('image_status') === 'missing')>Belum Ada Gambar</option>
@@ -80,7 +80,7 @@
                             <td>
                                 <form action="{{ route('panel.product-images.update', $product) }}" method="POST" enctype="multipart/form-data" class="flex min-w-[260px] flex-col gap-2">
                                     @csrf
-                                    <input type="file" name="gambar" accept="image/jpeg,image/png,image/jpg,image/webp" required class="block w-full rounded-lg border border-slate-300 text-xs file:mr-3 file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:font-semibold">
+                                    <input type="file" name="gambar" accept="image/jpeg,image/png,image/jpg,image/webp" required class="form-file-sipaman text-xs file:mr-3 file:px-3">
                                     <p class="panel-photo-recommendation">Rekomendasi foto: gunakan rasio 1:1 (persegi), minimal 800×800 px, ideal 1200×1200 px. Format JPG, JPEG, PNG, atau WebP. Maksimal ukuran file 2 MB.</p>
                                     <button class="rounded-lg bg-blue-700 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-800">Ganti Gambar</button>
                                 </form>

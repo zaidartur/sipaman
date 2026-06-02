@@ -8,10 +8,10 @@
             <p class="eyebrow text-[11px] font-600 text-secondary">Pelaku Usaha</p>
             <h1 class="font-display mt-2 text-4xl font-700 text-ink md:text-5xl">Pelaku Usaha / UMKM</h1>
             <p class="mt-3 max-w-2xl leading-7 text-on-surface-variant">Daftar pelaku usaha yang memiliki produk PIRT terverifikasi.</p>
-            <form class="mt-8 flex max-w-xl gap-2.5 rounded-3xl border border-outline-variant bg-white p-2.5 shadow-lift" method="GET">
+            <form class="mt-8 flex max-w-xl gap-2.5 rounded-3xl border border-outline-variant bg-white p-2.5 shadow-lift" method="GET" autocomplete="off">
                 <label class="flex flex-1 items-center gap-2 rounded-2xl bg-surface-container-low px-3.5 focus-within:bg-primary-soft">
                     <span class="material-symbols-outlined text-primary">search</span>
-                    <input name="search" value="{{ request('search') }}" placeholder="Cari pelaku usaha..." class="w-full border-0 bg-transparent py-3 text-on-surface placeholder:text-on-surface-variant focus:ring-0">
+                    <input name="search" value="{{ request('search') }}" placeholder="Cari pelaku usaha..." autocomplete="off" class="w-full border-0 bg-transparent py-3 text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-0">
                 </label>
                 <button class="rounded-2xl bg-primary px-6 py-3 font-600 text-white transition-colors hover:bg-primary-container">Cari</button>
             </form>

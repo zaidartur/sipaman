@@ -51,23 +51,23 @@
                     @csrf
                     <div>
                         <label class="text-sm font-600 text-on-surface" for="identifier">NIB / Email Admin</label>
-                        <div class="mt-2 flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-low px-3.5 focus-within:border-primary">
+                        <div class="mt-2 flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-low px-3.5 transition focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/25">
                             <span class="material-symbols-outlined text-on-surface-variant">person</span>
-                            <input class="w-full border-0 bg-transparent py-3 text-on-surface placeholder:text-on-surface-variant focus:ring-0" id="identifier" name="identifier" type="text" value="{{ old('identifier') }}" placeholder="NIB pelaku usaha atau email admin" required autofocus>
+                            <input class="w-full border-0 bg-transparent py-3 text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-0" id="identifier" name="identifier" type="text" value="{{ old('identifier') }}" placeholder="NIB pelaku usaha atau email admin" required autofocus autocomplete="username">
                         </div>
                         <p class="mt-1.5 text-xs text-on-surface-variant">Admin login dengan email, pelaku usaha dengan NIB.</p>
                     </div>
 
                     <div>
                         <label class="text-sm font-600 text-on-surface" for="password">Password</label>
-                        <div class="mt-2 flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-low px-3.5 focus-within:border-primary">
+                        <div class="mt-2 flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-low px-3.5 transition focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/25">
                             <span class="material-symbols-outlined text-on-surface-variant">lock</span>
-                            <input class="w-full border-0 bg-transparent py-3 text-on-surface focus:ring-0" id="password" name="password" type="password" required>
+                            <input class="w-full border-0 bg-transparent py-3 text-on-surface focus:outline-none focus:ring-0" id="password" name="password" type="password" required autocomplete="current-password">
                         </div>
                     </div>
 
                     <label class="flex items-center gap-2 text-sm font-500 text-on-surface-variant">
-                        <input class="rounded border-outline text-primary focus:ring-primary" name="remember" type="checkbox" value="1">
+                        <input class="form-checkbox-sipaman" name="remember" type="checkbox" value="1">
                         Ingat saya
                     </label>
 

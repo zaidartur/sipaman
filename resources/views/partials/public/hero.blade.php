@@ -43,18 +43,18 @@
                         @endif
                     </div>
 
-                    <form action="{{ route('products.index') }}" method="GET" class="rise mt-8 grid max-w-2xl gap-2.5 rounded-3xl border border-outline-variant bg-white p-2.5 shadow-lift md:grid-cols-[1fr_200px_auto]" style="animation-delay:.24s">
+                    <form action="{{ route('products.index') }}" method="GET" autocomplete="off" class="rise mt-8 grid max-w-2xl gap-2.5 rounded-3xl border border-outline-variant bg-white p-2.5 shadow-lift md:grid-cols-[1fr_200px_auto]" style="animation-delay:.24s">
                         <label class="flex items-center gap-2 rounded-2xl bg-surface-container-low px-3.5 transition focus-within:bg-primary-soft">
                             <span class="material-symbols-outlined text-primary">search</span>
-                            <input class="w-full border-0 bg-transparent py-3.5 text-on-surface placeholder:text-on-surface-variant focus:ring-0" name="search" placeholder="Cari nama produk..." type="text">
+                            <input class="w-full border-0 bg-transparent py-3.5 text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-0" name="search" value="{{ request('search') }}" placeholder="Cari nama produk..." type="text" autocomplete="off">
                         </label>
                         <label class="flex items-center gap-2 rounded-2xl bg-surface-container-low px-3.5 transition focus-within:bg-primary-soft">
                             <span class="material-symbols-outlined text-primary">location_on</span>
-                            <select class="w-full border-0 bg-transparent py-3.5 text-on-surface focus:ring-0" name="kecamatan">
+                            <select class="w-full rounded-xl border-0 bg-transparent py-3.5 text-on-surface transition focus:outline-none focus:ring-2 focus:ring-primary/25" name="kecamatan_id">
                                 <option value="">Semua Kecamatan</option>
-                                <option value="karanganyar">Karanganyar</option>
-                                <option value="tawangmangu">Tawangmangu</option>
-                                <option value="ngargoyoso">Ngargoyoso</option>
+                                @foreach (($kecamatans ?? collect()) as $kecamatan)
+                                    <option value="{{ $kecamatan->id }}" @selected((string) request('kecamatan_id') === (string) $kecamatan->id)>{{ $kecamatan->nama_kecamatan }}</option>
+                                @endforeach
                             </select>
                         </label>
                         <button class="inline-flex items-center justify-center gap-1.5 rounded-2xl bg-primary px-6 py-3.5 font-600 text-white transition-colors hover:bg-primary-container" type="submit">

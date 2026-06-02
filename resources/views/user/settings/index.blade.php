@@ -70,19 +70,19 @@
 
                     <div>
                         <label for="password_lama" class="mb-1.5 block text-sm font-600 text-on-surface">Password Lama</label>
-                        <input type="password" id="password_lama" name="password_lama" class="w-full rounded-xl border border-outline-variant bg-white px-3.5 py-3 text-sm text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/20 @error('password_lama') border-red-400 @enderror">
+                        <input type="password" id="password_lama" name="password_lama" autocomplete="current-password" class="form-input-sipaman w-full @error('password_lama') border-red-400 @enderror">
                         @error('password_lama')<p class="mt-1.5 text-xs font-600 text-red-600">{{ $message }}</p>@enderror
                     </div>
 
                     <div>
                         <label for="password_baru" class="mb-1.5 block text-sm font-600 text-on-surface">Password Baru</label>
-                        <input type="password" id="password_baru" name="password_baru" class="w-full rounded-xl border border-outline-variant bg-white px-3.5 py-3 text-sm text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/20 @error('password_baru') border-red-400 @enderror" placeholder="Minimal 8 karakter">
+                        <input type="password" id="password_baru" name="password_baru" autocomplete="new-password" class="form-input-sipaman w-full @error('password_baru') border-red-400 @enderror" placeholder="Minimal 8 karakter">
                         @error('password_baru')<p class="mt-1.5 text-xs font-600 text-red-600">{{ $message }}</p>@enderror
                     </div>
 
                     <div>
                         <label for="password_baru_confirmation" class="mb-1.5 block text-sm font-600 text-on-surface">Konfirmasi Password Baru</label>
-                        <input type="password" id="password_baru_confirmation" name="password_baru_confirmation" class="w-full rounded-xl border border-outline-variant bg-white px-3.5 py-3 text-sm text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/20">
+                        <input type="password" id="password_baru_confirmation" name="password_baru_confirmation" autocomplete="new-password" class="form-input-sipaman w-full">
                     </div>
 
                     <button type="submit" class="inline-flex items-center gap-1.5 rounded-xl bg-primary px-5 py-2.5 text-sm font-600 text-white transition-colors hover:bg-primary-container">

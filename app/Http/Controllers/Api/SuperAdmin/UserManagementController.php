@@ -19,14 +19,13 @@ class UserManagementController extends Controller
     public function index(Request $request): JsonResponse
     {
         $users = User::with('role')
+            ->whereHas('role', fn ($query) => $query->where('nama_role', 'admin'))
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = $request->query('search');
                 $query->where(fn ($q) => $q
                     ->where('nama', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('nib', 'like', "%{$search}%"));
+                    ->orWhere('email', 'like', "%{$search}%"));
             })
-            ->when($request->filled('role'), fn ($query) => $query->whereHas('role', fn ($q) => $q->where('nama_role', $request->query('role'))))
             ->orderBy('nama')
             ->paginate($request->query('per_page', 20));
 
@@ -54,12 +53,16 @@ class UserManagementController extends Controller
 
     public function show(User $user): JsonResponse
     {
+        if (! $this->isManagedAdmin($user)) {
+            return response()->json(['message' => 'Endpoint ini hanya untuk melihat akun admin.'], 403);
+        }
+
         return response()->json(['data' => $user->load('role')]);
     }
 
     public function update(UpdateUserRequest $request, User $user): JsonResponse
     {
-        if ($user->id === auth()->id() || ($user->role->nama_role ?? null) === 'super_admin') {
+        if ($user->id === auth()->id() || ! $this->isManagedAdmin($user)) {
             return response()->json(['message' => 'Akun ini tidak boleh diubah dari endpoint user management.'], 403);
         }
 
@@ -100,5 +103,10 @@ class UserManagementController extends Controller
         $this->logAudit('delete', 'users', $before['id'], $before, null);
 
         return response()->json(['message' => 'Admin berhasil dihapus.']);
+    }
+
+    private function isManagedAdmin(User $user): bool
+    {
+        return ($user->loadMissing('role')->role->nama_role ?? null) === 'admin';
     }
 }

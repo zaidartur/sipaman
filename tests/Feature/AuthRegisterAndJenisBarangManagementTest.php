@@ -6,6 +6,8 @@ use App\Models\JenisBarang;
 use App\Models\JenisBarangAlias;
 use App\Models\Role;
 use App\Models\User;
+use App\Support\ProductTypeClassifier;
+use Database\Seeders\JenisBarangSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
@@ -161,6 +163,31 @@ class AuthRegisterAndJenisBarangManagementTest extends TestCase
             'jenis_barang_id' => $owner->id,
             'keyword' => 'keripik',
         ]);
+    }
+
+    public function test_jenis_barang_seeder_uses_official_pirt_master_and_classifier_matches_clean_name(): void
+    {
+        $this->seed(JenisBarangSeeder::class);
+
+        $this->assertDatabaseHas('jenis_barangs', [
+            'nama_jenis' => 'Abon Daging',
+            'nomor_kategori' => 1,
+            'kategori_resmi' => 'HASIL OLAHAN DAGING DAN PRODUK DAGING KERING',
+            'status_pirt' => 'TERMASUK PIRT',
+            'is_active' => true,
+        ]);
+        $this->assertDatabaseMissing('jenis_barangs', [
+            'nama_jenis' => 'Makanan Ringan',
+            'is_active' => true,
+        ]);
+
+        $classifier = app(ProductTypeClassifier::class);
+
+        $this->assertSame('Abon Daging', $classifier->resolve(null, '1. Abon Daging')?->nama_jenis);
+        $this->assertSame(
+            ProductTypeClassifier::FALLBACK_CATEGORY,
+            $classifier->resolve(null, 'Jenis Pangan Tidak Ada Di Master')?->nama_jenis
+        );
     }
 
     private function createAdmin(): User

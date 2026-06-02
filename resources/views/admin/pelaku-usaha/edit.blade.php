@@ -36,7 +36,7 @@
             </div>
             <div>
                 <label class="text-sm font-semibold text-slate-700">Status Akun</label>
-                <select name="status_akun" class="mt-1 w-full rounded-lg border-slate-300">
+                <select name="status_akun" class="form-select-sipaman mt-1 w-full">
                     @foreach(['aktif' => 'Aktif', 'nonaktif' => 'Nonaktif', 'kunci' => 'Kunci'] as $value => $label)
                         <option value="{{ $value }}" @selected(old('status_akun', $user->status_akun) === $value)>{{ $label }}</option>
                     @endforeach
@@ -45,13 +45,13 @@
             </div>
             <div>
                 <label class="text-sm font-semibold text-slate-700">Password Baru</label>
-                <input type="password" name="password" class="mt-1 w-full rounded-lg border-slate-300" placeholder="Kosongkan jika tidak diganti">
+                <input type="password" name="password" autocomplete="new-password" class="form-input-sipaman mt-1 w-full" placeholder="Kosongkan jika tidak diganti">
                 @error('password')<p class="mt-1 text-sm text-red-700">{{ $message }}</p>@enderror
                 <p class="mt-1 text-xs text-slate-500">Isi untuk set password awal atau reset password.</p>
             </div>
             <div>
                 <label class="text-sm font-semibold text-slate-700">Konfirmasi Password Baru</label>
-                <input type="password" name="password_confirmation" class="mt-1 w-full rounded-lg border-slate-300" placeholder="Ulangi password baru">
+                <input type="password" name="password_confirmation" autocomplete="new-password" class="form-input-sipaman mt-1 w-full" placeholder="Ulangi password baru">
             </div>
         </div>
 

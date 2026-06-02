@@ -15,69 +15,26 @@ class ProductTypeClassifier
 
     private ?Collection $activeAliases = null;
 
-    private const DEFAULT_DESCRIPTIONS = [
-        'Makanan Ringan' => 'Camilan kering, keripik, kerupuk, rengginang, dan snack sejenis.',
-        'Roti & Kue' => 'Produk bakery, roti, cake, cookies, biskuit, dan jajanan kue.',
-        'Minuman' => 'Minuman siap saji, minuman serbuk, teh, kopi, sari buah, dan botanikal.',
-        'Bumbu & Sambal' => 'Bumbu olahan, sambal, saus, rempah, dan penyedap pangan.',
-        'Olahan Hewani' => 'Produk olahan ikan, ayam, daging, telur, abon, dan pangan hewani lain.',
-        'Olahan Buah & Sayur' => 'Produk berbasis buah, sayur, selai, manisan, asinan, dan olahan nabati basah/kering.',
-        'Olahan Kacang, Biji & Umbi' => 'Produk berbahan kacang, biji-bijian, serealia, singkong, ubi, kentang, dan tepung.',
-        'Gula, Madu & Pemanis' => 'Produk gula, madu, sirup, permen, cokelat, dan pemanis sejenis.',
-        'Makanan Siap Saji' => 'Produk pangan olahan siap konsumsi atau siap dipanaskan.',
-        self::FALLBACK_CATEGORY => 'Data belum cocok dengan aturan klasifikasi dan perlu direview admin.',
-    ];
-
-    private const KEYWORD_RULES = [
-        'Makanan Ringan' => [
-            'makanan ringan', 'snack', 'keripik', 'kripik', 'kerupuk', 'rambak', 'rengginang', 'rempeyek', 'peyek', 'stik', 'stick', 'opak', 'emping', 'makaroni', 'basreng', 'camilan', 'cemilan',
-        ],
-        'Roti & Kue' => [
-            'bakery', 'roti', 'kue', 'cake', 'kukis', 'cookies', 'biskuit', 'nastar', 'bolu', 'brownies', 'donat', 'pastry', 'pie', 'bakpia',
-        ],
-        'Minuman' => [
-            'minuman', 'teh', 'kopi', 'sari buah', 'sirup minuman', 'jamu', 'wedang', 'botanikal', 'serbuk minuman', 'minuman serbuk', 'susu', 'coklat bubuk',
-        ],
-        'Bumbu & Sambal' => [
-            'bumbu', 'sambal', 'saus', 'saos', 'rempah', 'penyedap', 'kaldu', 'abon cabe', 'serundeng', 'bawang goreng',
-        ],
-        'Olahan Hewani' => [
-            'ikan', 'daging', 'ayam', 'sapi', 'telur', 'abon', 'usus', 'paru', 'bakso', 'nugget', 'sosis', 'udang', 'teri', 'lele', 'bandeng',
-        ],
-        'Olahan Buah & Sayur' => [
-            'buah', 'sayur', 'selai', 'manisan', 'asinan', 'pisang', 'salak', 'nangka', 'apel', 'mangga', 'jamur', 'kentang sayur', 'tomat',
-        ],
-        'Olahan Kacang, Biji & Umbi' => [
-            'kacang', 'biji', 'umbi', 'singkong', 'ubi', 'talas', 'kentang', 'tepung', 'beras', 'jagung', 'kedelai', 'tempe', 'sereal', 'serealia', 'hasil olahan biji',
-        ],
-        'Gula, Madu & Pemanis' => [
-            'gula', 'madu', 'permen', 'cokelat', 'coklat', 'sirup', 'karamel', 'jelly', 'agar', 'pemanis',
-        ],
-        'Makanan Siap Saji' => [
-            'siap saji', 'rendang', 'gudeg', 'lauk', 'nasi', 'mie', 'mi ', 'mi-', 'frozen food', 'beku', 'instan',
-        ],
-    ];
+    private ?Collection $activeJenisBarangs = null;
 
     public function resolve(?string $kategoriPangan, ?string $jenisPangan): ?JenisBarang
     {
-        $haystack = $this->normalize(trim(($kategoriPangan ?? '').' '.($jenisPangan ?? '')));
+        $needle = $this->normalize((string) $jenisPangan);
 
-        if ($haystack === '') {
+        if ($needle === '') {
             return null;
         }
 
-        $fromAlias = $this->resolveFromDatabaseAliases($haystack);
+        $fromMaster = $this->resolveFromOfficialMaster($needle);
+
+        if ($fromMaster) {
+            return $fromMaster;
+        }
+
+        $fromAlias = $this->resolveFromDatabaseAliases($needle);
 
         if ($fromAlias) {
             return $fromAlias;
-        }
-
-        foreach (self::KEYWORD_RULES as $category => $keywords) {
-            foreach ($keywords as $keyword) {
-                if (str_contains($haystack, $this->normalize($keyword))) {
-                    return $this->firstOrCreateCategory($category);
-                }
-            }
         }
 
         return $this->fallbackCategory();
@@ -85,29 +42,17 @@ class ProductTypeClassifier
 
     public function seedDefaults(): void
     {
-        foreach (array_keys(self::DEFAULT_DESCRIPTIONS) as $category) {
-            $jenisBarang = $this->firstOrCreateCategory($category);
+        $this->seedOfficialMaster();
+        $this->seedFallbackCategory();
+        $this->deactivateLegacyCategories();
 
-            if (! Schema::hasTable('jenis_barang_aliases')) {
-                continue;
-            }
-
-            foreach (self::KEYWORD_RULES[$category] ?? [] as $priority => $keyword) {
-                JenisBarangAlias::updateOrCreate(
-                    ['keyword' => $this->normalize($keyword)],
-                    [
-                        'jenis_barang_id' => $jenisBarang->id,
-                        'priority' => $priority + 1,
-                        'is_active' => true,
-                    ]
-                );
-            }
-        }
+        $this->activeJenisBarangs = null;
+        $this->activeAliases = null;
     }
 
     public function fallbackCategory(): JenisBarang
     {
-        return $this->firstOrCreateCategory(self::FALLBACK_CATEGORY);
+        return $this->seedFallbackCategory();
     }
 
     public function normalizeKeyword(string $value): string
@@ -115,7 +60,7 @@ class ProductTypeClassifier
         return $this->normalize($value);
     }
 
-    public function reclassifyExistingProducts(): array
+    public function reclassifyExistingProducts(bool $dryRun = false): array
     {
         $checked = 0;
         $updated = 0;
@@ -124,7 +69,7 @@ class ProductTypeClassifier
         Produk::query()
             ->select(['id', 'kategori_pangan', 'jenis_pangan', 'jenis_barang_id'])
             ->orderBy('id')
-            ->chunkById(100, function ($produks) use (&$checked, &$updated, &$fallback) {
+            ->chunkById(100, function ($produks) use (&$checked, &$updated, &$fallback, $dryRun) {
                 foreach ($produks as $produk) {
                     if (blank($produk->kategori_pangan) && blank($produk->jenis_pangan)) {
                         continue;
@@ -142,7 +87,10 @@ class ProductTypeClassifier
                     }
 
                     if ((int) $produk->jenis_barang_id !== (int) $jenisBarang->id) {
-                        $produk->forceFill(['jenis_barang_id' => $jenisBarang->id])->save();
+                        if (! $dryRun) {
+                            $produk->forceFill(['jenis_barang_id' => $jenisBarang->id])->save();
+                        }
+
                         $updated++;
                     }
                 }
@@ -155,7 +103,23 @@ class ProductTypeClassifier
         ];
     }
 
-    private function resolveFromDatabaseAliases(string $haystack): ?JenisBarang
+    private function resolveFromOfficialMaster(string $needle): ?JenisBarang
+    {
+        $jenisBarangs = $this->activeJenisBarangs ??= JenisBarang::query()
+            ->active()
+            ->orderBy('nama_jenis')
+            ->get();
+
+        foreach ($jenisBarangs as $jenisBarang) {
+            if ($this->normalize($jenisBarang->nama_jenis) === $needle) {
+                return $jenisBarang;
+            }
+        }
+
+        return null;
+    }
+
+    private function resolveFromDatabaseAliases(string $needle): ?JenisBarang
     {
         if (! Schema::hasTable('jenis_barang_aliases')) {
             return null;
@@ -169,7 +133,13 @@ class ProductTypeClassifier
             ->get();
 
         foreach ($aliases as $alias) {
-            if ($alias->keyword && str_contains($haystack, $this->normalize($alias->keyword))) {
+            if ($alias->keyword && $this->normalize($alias->keyword) === $needle) {
+                return $alias->jenisBarang;
+            }
+        }
+
+        foreach ($aliases as $alias) {
+            if ($alias->keyword && str_contains($needle, $this->normalize($alias->keyword))) {
                 return $alias->jenisBarang;
             }
         }
@@ -177,50 +147,101 @@ class ProductTypeClassifier
         return null;
     }
 
-    private function firstOrCreateCategory(string $name): JenisBarang
+    private function seedOfficialMaster(): void
     {
-        $data = ['nama_jenis' => $name];
-        $slug = Str::slug($name);
+        $rows = require database_path('seeders/data/pirt_jenis_pangan.php');
 
-        if (Schema::hasColumn('jenis_barangs', 'slug')) {
-            $data['slug'] = $slug;
-        }
-
-        if (Schema::hasColumn('jenis_barangs', 'deskripsi')) {
-            $data['deskripsi'] = self::DEFAULT_DESCRIPTIONS[$name] ?? null;
-        }
-
-        if (Schema::hasColumn('jenis_barangs', 'is_active')) {
-            $data['is_active'] = true;
-        }
-
-        $existing = JenisBarang::query()
-            ->when(
-                Schema::hasColumn('jenis_barangs', 'slug'),
-                fn ($query) => $query->where('slug', $slug)->orWhere('nama_jenis', $name),
-                fn ($query) => $query->where('nama_jenis', $name)
-            )
-            ->first();
-
-        if ($existing) {
-            $dirty = array_filter(
-                $data,
-                fn ($value, $key) => $value !== null && blank($existing->{$key}),
-                ARRAY_FILTER_USE_BOTH
+        foreach ($rows as $row) {
+            $name = trim((string) $row['nama_jenis']);
+            $jenisBarang = JenisBarang::updateOrCreate(
+                ['nama_jenis' => $name],
+                $this->officialMasterData($row)
             );
 
-            if ($dirty !== []) {
-                $existing->fill($dirty)->save();
-            }
+            $this->seedExactAlias($jenisBarang, $name);
+        }
+    }
 
-            return $existing;
+    private function seedFallbackCategory(): JenisBarang
+    {
+        return JenisBarang::updateOrCreate(
+            ['nama_jenis' => self::FALLBACK_CATEGORY],
+            $this->columnSafeData([
+                'slug' => Str::slug(self::FALLBACK_CATEGORY),
+                'deskripsi' => 'Jenis pangan dari Rekap PIRT belum cocok dengan master resmi dan perlu direview admin.',
+                'keterangan' => 'Kategori khusus untuk review data import.',
+                'status_pirt' => 'PERLU REVIEW',
+                'is_active' => false,
+            ])
+        );
+    }
+
+    private function seedExactAlias(JenisBarang $jenisBarang, string $name): void
+    {
+        if (! Schema::hasTable('jenis_barang_aliases')) {
+            return;
         }
 
-        return JenisBarang::create($data);
+        $keyword = $this->normalize($name);
+
+        if ($keyword === '') {
+            return;
+        }
+
+        JenisBarangAlias::updateOrCreate(
+            ['keyword' => $keyword],
+            [
+                'jenis_barang_id' => $jenisBarang->id,
+                'priority' => 1,
+                'is_active' => true,
+            ]
+        );
+    }
+
+    private function deactivateLegacyCategories(): void
+    {
+        JenisBarang::query()
+            ->whereIn('nama_jenis', [
+                'Makanan Ringan',
+                'Roti & Kue',
+                'Minuman',
+                'Bumbu & Sambal',
+                'Olahan Hewani',
+                'Olahan Buah & Sayur',
+                'Olahan Kacang, Biji & Umbi',
+                'Gula, Madu & Pemanis',
+                'Makanan Siap Saji',
+            ])
+            ->update(['is_active' => false]);
+    }
+
+    private function officialMasterData(array $row): array
+    {
+        $name = trim((string) $row['nama_jenis']);
+        $slug = Str::slug($name);
+
+        return $this->columnSafeData([
+            'slug' => $slug,
+            'nomor_kategori' => $row['nomor_kategori'] ?? null,
+            'kategori_resmi' => $row['kategori_resmi'] ?? null,
+            'deskripsi' => $row['deskripsi'] ?? null,
+            'keterangan' => $row['keterangan'] ?? null,
+            'status_pirt' => $row['status_pirt'] ?? null,
+            'dasar_hukum' => $row['dasar_hukum'] ?? null,
+            'is_active' => true,
+        ]);
+    }
+
+    private function columnSafeData(array $data): array
+    {
+        return collect($data)
+            ->filter(fn ($value, string $column) => Schema::hasColumn('jenis_barangs', $column))
+            ->all();
     }
 
     private function normalize(string $value): string
     {
+        $value = preg_replace('/^\s*\d+\s*[\.)-]\s*/u', '', trim($value)) ?: $value;
         $value = Str::lower(Str::ascii($value));
         $value = preg_replace('/[^a-z0-9]+/', ' ', $value) ?: $value;
         $value = preg_replace('/\s+/', ' ', $value) ?: $value;

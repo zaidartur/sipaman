@@ -14,15 +14,15 @@
             <p class="mt-1 text-slate-600">Admin dapat mengaktifkan, menonaktifkan, mengunci, dan mengatur password akun pelaku usaha. Identitas login pelaku usaha adalah NIB.</p>
         </div>
 
-        <form method="GET" class="mt-5 grid gap-3 md:grid-cols-[1fr_180px_210px_auto]">
-            <input name="search" value="{{ request('search') }}" placeholder="Cari nama atau NIB" class="rounded-lg border-slate-300">
-            <select name="status_akun" class="rounded-lg border-slate-300">
+        <form method="GET" autocomplete="off" class="mt-5 grid gap-3 md:grid-cols-[1fr_180px_210px_auto]">
+            <input name="search" value="{{ request('search') }}" placeholder="Cari nama atau NIB" autocomplete="off" class="form-input-sipaman">
+            <select name="status_akun" class="form-select-sipaman">
                 <option value="">Semua Status</option>
                 @foreach (['aktif' => 'Aktif', 'nonaktif' => 'Nonaktif', 'kunci' => 'Kunci'] as $value => $label)
                     <option value="{{ $value }}" @selected(request('status_akun') === $value)>{{ $label }}</option>
                 @endforeach
             </select>
-            <select name="password_status" class="rounded-lg border-slate-300">
+            <select name="password_status" class="form-select-sipaman">
                 <option value="">Semua Password</option>
                 <option value="needs_setup" @selected(request('password_status') === 'needs_setup')>Belum Diset</option>
                 <option value="ready" @selected(request('password_status') === 'ready')>Sudah Diset</option>

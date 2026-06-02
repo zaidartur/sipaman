@@ -9,8 +9,8 @@
     <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
         <div class="flex flex-col justify-between gap-4 md:flex-row md:items-start">
             <div>
-                <h2 class="font-display text-xl font-bold">Klasifikasi Jenis Barang</h2>
-                <p class="mt-1 text-slate-600">Kelola kategori sederhana dan alias kata kunci untuk membaca jenis pangan dari file import.</p>
+                <h2 class="font-display text-xl font-bold">Master Jenis Pangan PIRT</h2>
+                <p class="mt-1 text-slate-600">Master mengikuti data resmi PIRT. Kelola alias untuk mencocokkan jenis pangan dari file Rekap PIRT.</p>
                 <p class="mt-2 text-sm text-amber-700">
                     {{ number_format($fallbackProductsCount) }} produk berada di kategori {{ $fallback->nama_jenis }}.
                 </p>
@@ -34,6 +34,7 @@
                 <thead class="bg-slate-50 text-slate-600">
                     <tr>
                         <th class="px-4 py-3">Nama Jenis</th>
+                        <th class="px-4 py-3">Kategori Resmi</th>
                         <th class="px-4 py-3">Keterangan</th>
                         <th class="px-4 py-3">Alias</th>
                         <th class="px-4 py-3">Produk</th>
@@ -50,7 +51,13 @@
                                     <span class="mt-1 block text-xs font-normal text-slate-500">{{ $jenisBarang->slug }}</span>
                                 @endif
                             </td>
-                            <td class="px-4 py-3 text-slate-600">{{ $jenisBarang->deskripsi ?: '-' }}</td>
+                            <td class="px-4 py-3 text-slate-700">
+                                {{ $jenisBarang->kategori_resmi ?: '-' }}
+                                @if ($jenisBarang->nomor_kategori)
+                                    <span class="mt-1 block text-xs text-slate-500">Kategori {{ $jenisBarang->nomor_kategori }}</span>
+                                @endif
+                            </td>
+                            <td class="px-4 py-3 text-slate-600">{{ $jenisBarang->deskripsi ?: $jenisBarang->keterangan ?: '-' }}</td>
                             <td class="px-4 py-3 text-slate-700">{{ number_format($jenisBarang->aliases_count) }} keyword</td>
                             <td class="px-4 py-3 text-slate-700">{{ number_format($jenisBarang->produks_count) }}</td>
                             <td class="px-4 py-3">
@@ -63,7 +70,7 @@
                             <td class="px-4 py-3 text-right"><a class="font-semibold text-blue-700" href="{{ route('panel.jenis-barang.edit', $jenisBarang) }}">Edit</a></td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">Belum ada jenis barang.</td></tr>
+                        <tr><td colspan="7" class="px-4 py-8 text-center text-slate-500">Belum ada jenis barang.</td></tr>
                     @endforelse
                 </tbody>
             </table>

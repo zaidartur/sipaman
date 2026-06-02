@@ -8,22 +8,22 @@
     <div class="grid gap-4 md:grid-cols-2">
         <div>
             <label class="text-sm font-semibold">Nama Admin</label>
-            <input name="nama" value="{{ old('nama') }}" required class="mt-1 w-full rounded-lg border-slate-300" placeholder="Nama admin">
+            <input name="nama" value="{{ old('nama') }}" required autocomplete="name" class="form-input-sipaman mt-1 w-full" placeholder="Nama admin">
             @error('nama')<p class="mt-1 text-sm text-red-700">{{ $message }}</p>@enderror
         </div>
         <div>
             <label class="text-sm font-semibold">Email Login</label>
-            <input type="email" name="email" value="{{ old('email') }}" required class="mt-1 w-full rounded-lg border-slate-300" placeholder="admin@sipaman.id">
+            <input type="email" name="email" value="{{ old('email') }}" required autocomplete="email" class="form-input-sipaman mt-1 w-full" placeholder="admin@sipaman.id">
             @error('email')<p class="mt-1 text-sm text-red-700">{{ $message }}</p>@enderror
         </div>
         <div>
             <label class="text-sm font-semibold">Password</label>
-            <input type="password" name="password" required class="mt-1 w-full rounded-lg border-slate-300" placeholder="Minimal 8 karakter">
+            <input type="password" name="password" required autocomplete="new-password" class="form-input-sipaman mt-1 w-full" placeholder="Minimal 8 karakter">
             @error('password')<p class="mt-1 text-sm text-red-700">{{ $message }}</p>@enderror
         </div>
         <div>
             <label class="text-sm font-semibold">Status Akun</label>
-            <select name="status_akun" class="mt-1 w-full rounded-lg border-slate-300">
+            <select name="status_akun" class="form-select-sipaman mt-1 w-full">
                 @foreach(['aktif','nonaktif','kunci'] as $status)
                     <option value="{{ $status }}" @selected(old('status_akun', 'aktif') === $status)>{{ ucfirst($status) }}</option>
                 @endforeach
@@ -48,12 +48,12 @@
         </div>
         <div>
             <label class="text-sm font-semibold">Password Baru</label>
-            <input type="password" name="password" class="mt-1 w-full rounded-lg border-slate-300" placeholder="Kosongkan jika tidak diganti">
+            <input type="password" name="password" autocomplete="new-password" class="form-input-sipaman mt-1 w-full" placeholder="Kosongkan jika tidak diganti">
             @error('password')<p class="mt-1 text-sm text-red-700">{{ $message }}</p>@enderror
         </div>
         <div>
             <label class="text-sm font-semibold">Status Akun</label>
-            <select name="status_akun" class="mt-1 w-full rounded-lg border-slate-300">
+            <select name="status_akun" class="form-select-sipaman mt-1 w-full">
                 @foreach(['aktif','nonaktif','kunci'] as $status)
                     <option value="{{ $status }}" @selected(old('status_akun', $user->status_akun ?? 'aktif') === $status)>{{ ucfirst($status) }}</option>
                 @endforeach

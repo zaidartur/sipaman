@@ -27,7 +27,8 @@ class ProductImportController extends Controller
         $this->logAudit('import', 'produks', null, null, $result);
 
         return back()
-            ->with('success', "Import Rekap Data PIRT selesai. Berhasil: {$result['berhasil']}, gagal: {$result['gagal']}.")
-            ->with('import_failures', array_slice($result['failures'], 0, 5));
+            ->with('success', "Import Rekap Data PIRT selesai. Berhasil: {$result['berhasil']}, gagal: {$result['gagal']}, perlu review jenis pangan: {$result['warning_count']}.")
+            ->with('import_failures', array_slice($result['failures'], 0, 5))
+            ->with('import_warnings', array_slice($result['warnings'], 0, 5));
     }
 }

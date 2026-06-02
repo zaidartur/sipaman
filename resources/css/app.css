@@ -182,6 +182,28 @@ h6,
         @apply text-xs leading-5 text-slate-500;
     }
 
+    .form-input-sipaman,
+    .form-select-sipaman,
+    .form-textarea-sipaman {
+        @apply rounded-lg border border-outline-variant bg-white px-3.5 py-2.5 text-sm text-on-surface shadow-sm transition placeholder:text-on-surface-variant focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/25;
+    }
+
+    .form-select-sipaman {
+        @apply pr-10;
+    }
+
+    .form-textarea-sipaman {
+        @apply min-h-24 resize-y leading-6;
+    }
+
+    .form-file-sipaman {
+        @apply block w-full rounded-lg border border-outline-variant bg-white text-sm text-on-surface-variant shadow-sm transition file:mr-4 file:border-0 file:bg-primary-soft file:px-4 file:py-2 file:font-semibold file:text-primary hover:file:bg-primary hover:file:text-white focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/25;
+    }
+
+    .form-checkbox-sipaman {
+        @apply rounded border-outline-variant text-primary transition focus:outline-none focus:ring-2 focus:ring-primary/25;
+    }
+
     .panel-loading-overlay {
         @apply fixed inset-0 z-[80] hidden items-center justify-center bg-slate-900/45 px-4 backdrop-blur-sm;
     }
@@ -306,6 +328,24 @@ h6,
 
 .admin-shell .focus\:ring-slate-900:focus {
     --tw-ring-color: #0d9488 !important;
+}
+
+.admin-shell input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="submit"]):not([type="button"]),
+.admin-shell select,
+.admin-shell textarea {
+    border-color: #bcd8d2;
+    border-radius: 0.625rem;
+    background-color: #ffffff;
+    color: #16302c;
+    transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+
+.admin-shell input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="submit"]):not([type="button"]):focus,
+.admin-shell select:focus,
+.admin-shell textarea:focus {
+    border-color: #0d9488;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.20);
 }
 
 .admin-shell .text-slate-900.rounded,

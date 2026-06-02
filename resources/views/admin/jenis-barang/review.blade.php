@@ -4,7 +4,7 @@
 @section('content')
 <div class="space-y-5">
     <div class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-        Produk di halaman ini masuk kategori {{ $fallback->nama_jenis }} karena jenis pangan dari file import belum cocok dengan alias yang tersedia.
+        Produk di halaman ini masuk {{ $fallback->nama_jenis }} karena jenis pangan dari file import belum cocok dengan master resmi atau alias yang tersedia.
         Tambahkan alias pada jenis barang yang tepat, lalu jalankan Sinkronkan Ulang Jenis Produk.
     </div>
 
@@ -17,8 +17,8 @@
             <a href="{{ route('panel.jenis-barang.index') }}" class="rounded-lg border border-slate-300 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-50">Kembali</a>
         </div>
 
-        <form method="GET" class="mt-5 grid gap-3 md:grid-cols-[1fr_auto]">
-            <input name="search" value="{{ request('search') }}" placeholder="Cari produk, No SPPIRT, pelaku usaha, kategori, atau jenis pangan" class="rounded-lg border-slate-300">
+        <form method="GET" autocomplete="off" class="mt-5 grid gap-3 md:grid-cols-[1fr_auto]">
+            <input name="search" value="{{ request('search') }}" placeholder="Cari produk, No SPPIRT, pelaku usaha, kategori, atau jenis pangan" autocomplete="off" class="form-input-sipaman">
             <button class="rounded-lg border border-slate-300 px-4 py-2 font-semibold">Cari</button>
         </form>
 
