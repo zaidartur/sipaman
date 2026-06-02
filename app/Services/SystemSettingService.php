@@ -220,6 +220,26 @@ class SystemSettingService
             return (string) (int) $normalized;
         }
 
+        if (($definition['type'] ?? null) === 'boolean') {
+            return in_array(strtolower($normalized), ['1', 'true', 'on', 'yes'], true) ? '1' : '0';
+        }
+
+        if (($definition['type'] ?? null) === 'days_list') {
+            $days = collect(preg_split('/[\s,]+/', $normalized, -1, PREG_SPLIT_NO_EMPTY) ?: [])
+                ->map(fn (string $day) => (int) $day)
+                ->filter(fn (int $day) => $day >= 1 && $day <= 365)
+                ->unique()
+                ->sortDesc()
+                ->values()
+                ->all();
+
+            return $days === [] ? null : implode(',', $days);
+        }
+
+        if (($definition['type'] ?? null) === 'time') {
+            return $normalized;
+        }
+
         return $normalized === '' ? null : $normalized;
     }
 

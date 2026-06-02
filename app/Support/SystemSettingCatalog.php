@@ -21,6 +21,10 @@ class SystemSettingCatalog
             'label' => 'Tampilan Data',
             'description' => 'Atur jumlah data yang ditampilkan pada daftar produk dan halaman terkait.',
         ],
+        'notifications' => [
+            'label' => 'Notifikasi PIRT',
+            'description' => 'Atur pengingat WhatsApp untuk masa berlaku PIRT. Kunci API StarSender tetap disimpan di file .env.',
+        ],
         'system' => [
             'label' => 'Pengaturan Sistem',
             'description' => 'Konfigurasi global yang aman dan bukan konten halaman depan.',
@@ -120,6 +124,34 @@ class SystemSettingCatalog
             'min' => 3,
             'max' => 100,
             'description' => 'Jumlah data default per halaman untuk daftar produk dan halaman terkait. Nilai aman 3 sampai 100.',
+        ],
+        'pirt_expiry_notification_enabled' => [
+            'group' => 'notifications',
+            'label' => 'Aktifkan Notifikasi Masa Berlaku PIRT',
+            'type' => 'boolean',
+            'default' => '0',
+            'description' => 'Jika aktif, sistem akan menjalankan pengingat WhatsApp untuk produk terverifikasi yang masa berlaku PIRT-nya mendekati habis.',
+        ],
+        'pirt_expiry_warning_days' => [
+            'group' => 'notifications',
+            'label' => 'Hari Peringatan',
+            'type' => 'days_list',
+            'default' => '30,14,7',
+            'description' => 'Isi jarak hari sebelum masa berlaku habis, pisahkan dengan koma. Contoh: 30,14,7.',
+        ],
+        'pirt_expiry_notification_time' => [
+            'group' => 'notifications',
+            'label' => 'Jam Pengiriman Harian',
+            'type' => 'time',
+            'default' => '08:00',
+            'description' => 'Jam scheduler harian menjalankan pengecekan notifikasi. Gunakan format 24 jam, misalnya 08:00.',
+        ],
+        'pirt_expiry_message_template' => [
+            'group' => 'notifications',
+            'label' => 'Template Pesan WhatsApp',
+            'type' => 'textarea',
+            'default' => 'Yth. {nama_pelaku_usaha}, masa berlaku PIRT produk {nama_produk} (No. SPPIRT {no_sppirt}) akan berakhir pada {masa_berlaku_pirt}. Mohon siapkan pembaruan sesuai ketentuan.',
+            'description' => 'Placeholder yang tersedia: {nama_pelaku_usaha}, {nama_produk}, {no_sppirt}, {masa_berlaku_pirt}, {warning_days}, dan {nib}.',
         ],
         'import_max_file_size_kb' => [
             'group' => 'system',

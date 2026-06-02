@@ -31,4 +31,10 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'starsender' => [
+        'api_key' => env('STARSENDER_DEVICE_API_KEY'),
+        'endpoint' => env('STARSENDER_ENDPOINT', 'https://api.starsender.online/api/send'),
+        'timeout' => env('STARSENDER_TIMEOUT', 15),
+    ],
+
 ];

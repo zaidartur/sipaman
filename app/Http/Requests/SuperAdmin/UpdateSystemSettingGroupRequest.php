@@ -78,6 +78,18 @@ class UpdateSystemSettingGroupRequest extends FormRequest
                     $this->validateNumberSetting($validator, $key, (string) $value, $definition);
                 }
 
+                if (($definition['type'] ?? null) === 'boolean' && ! in_array((string) $value, ['0', '1'], true)) {
+                    $validator->errors()->add("values.{$key}", 'Pilihan pengaturan ini tidak valid.');
+                }
+
+                if (($definition['type'] ?? null) === 'days_list') {
+                    $this->validateWarningDaysSetting($validator, $key, (string) $value);
+                }
+
+                if (($definition['type'] ?? null) === 'time') {
+                    $this->validateTimeSetting($validator, $key, (string) $value);
+                }
+
                 if ($key === 'site_logo_path' && filled($value)) {
                     $validator->errors()->add("values.{$key}", 'Logo website harus diunggah sebagai file gambar, bukan ditulis sebagai path manual.');
                 }
@@ -134,6 +146,40 @@ class UpdateSystemSettingGroupRequest extends FormRequest
 
         if ($number < $min || $number > $max) {
             $validator->errors()->add("values.{$key}", "Nilai pengaturan ini harus antara {$min} sampai {$max}.");
+        }
+    }
+
+    private function validateWarningDaysSetting(Validator $validator, string $key, string $value): void
+    {
+        $parts = preg_split('/[\s,]+/', trim($value), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+        if ($parts === []) {
+            $validator->errors()->add("values.{$key}", 'Hari peringatan wajib diisi, misalnya 30,14,7.');
+
+            return;
+        }
+
+        foreach ($parts as $part) {
+            if (! ctype_digit($part)) {
+                $validator->errors()->add("values.{$key}", 'Hari peringatan hanya boleh berisi angka yang dipisahkan koma.');
+
+                return;
+            }
+
+            $day = (int) $part;
+
+            if ($day < 1 || $day > 365) {
+                $validator->errors()->add("values.{$key}", 'Hari peringatan harus berada antara 1 sampai 365 hari.');
+
+                return;
+            }
+        }
+    }
+
+    private function validateTimeSetting(Validator $validator, string $key, string $value): void
+    {
+        if (! preg_match('/^(?:[01]\d|2[0-3]):[0-5]\d$/', trim($value))) {
+            $validator->errors()->add("values.{$key}", 'Jam pengiriman harus menggunakan format 24 jam, misalnya 08:00.');
         }
     }
 }

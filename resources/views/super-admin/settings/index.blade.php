@@ -89,6 +89,20 @@
                                         >
                                     </div>
                                     @error('logo')<p class="mt-1 text-sm text-red-700">{{ $message }}</p>@enderror
+                                @elseif ($inputType === 'boolean')
+                                    <input type="hidden" name="{{ $fieldName }}" value="0">
+                                    <label class="mt-3 inline-flex items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700">
+                                        <input
+                                            id="setting-{{ $setting->id }}"
+                                            type="checkbox"
+                                            name="{{ $fieldName }}"
+                                            value="1"
+                                            @checked((string) $value === '1')
+                                            class="rounded border-slate-300 text-slate-900 focus:ring-slate-900"
+                                        >
+                                        Aktif
+                                    </label>
+                                    @error($errorKey)<p class="mt-1 text-sm text-red-700">{{ $message }}</p>@enderror
                                 @elseif ($inputType === 'textarea')
                                     <textarea
                                         id="setting-{{ $setting->id }}"
@@ -101,9 +115,10 @@
                                     <input
                                         id="setting-{{ $setting->id }}"
                                         name="{{ $fieldName }}"
-                                        type="{{ $inputType === 'number' ? 'number' : ($inputType === 'email' ? 'email' : 'text') }}"
+                                        type="{{ $inputType === 'number' ? 'number' : ($inputType === 'email' ? 'email' : ($inputType === 'time' ? 'time' : 'text')) }}"
                                         value="{{ $value }}"
                                         @if ($inputType === 'number') min="{{ $meta['min'] ?? 1 }}" max="{{ $meta['max'] ?? 100000 }}" step="1" @endif
+                                        @if ($inputType === 'days_list') placeholder="30,14,7" @endif
                                         class="mt-2 w-full rounded-lg border-slate-300 bg-white text-sm"
                                     >
                                     @error($errorKey)<p class="mt-1 text-sm text-red-700">{{ $message }}</p>@enderror
