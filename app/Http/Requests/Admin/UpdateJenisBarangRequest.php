@@ -2,11 +2,15 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Http\Requests\Admin\Concerns\ValidatesJenisBarangFields;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class UpdateJenisBarangRequest extends FormRequest
 {
+    use ValidatesJenisBarangFields;
+
     public function authorize(): bool
     {
         return true;
@@ -16,11 +20,16 @@ class UpdateJenisBarangRequest extends FormRequest
     {
         return [
             'nama_jenis' => ['required', 'string', 'max:100', Rule::unique('jenis_barangs', 'nama_jenis')->ignore($this->route('jenisBarang')?->id)],
-            'slug' => ['nullable', 'string', 'max:160', Rule::unique('jenis_barangs', 'slug')->ignore($this->route('jenisBarang')?->id)],
+            'slug' => ['nullable', 'string', 'max:160'],
             'deskripsi' => ['nullable', 'string', 'max:1000'],
             'is_active' => ['sometimes', 'boolean'],
             'aliases' => ['nullable', 'string', 'max:5000'],
         ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $this->validateJenisBarangFields($validator, $this->route('jenisBarang')?->id);
     }
 
     public function messages(): array

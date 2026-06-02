@@ -8,6 +8,7 @@ use App\Support\ProductTypeClassifier;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class JenisBarangManagementService
 {
@@ -72,11 +73,22 @@ class JenisBarangManagementService
             ->whereNotIn('keyword', $keywords->all())
             ->delete();
 
+        $conflict = JenisBarangAlias::query()
+            ->whereIn('keyword', $keywords->all())
+            ->where('jenis_barang_id', '!=', $jenisBarang->id)
+            ->orderBy('keyword')
+            ->first();
+
+        if ($conflict) {
+            throw ValidationException::withMessages([
+                'aliases' => "Alias '{$conflict->keyword}' sudah digunakan oleh jenis barang lain.",
+            ]);
+        }
+
         foreach ($keywords as $index => $keyword) {
-            JenisBarangAlias::updateOrCreate(
+            $jenisBarang->aliases()->updateOrCreate(
                 ['keyword' => $keyword],
                 [
-                    'jenis_barang_id' => $jenisBarang->id,
                     'priority' => $index + 1,
                     'is_active' => true,
                 ]

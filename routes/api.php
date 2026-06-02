@@ -16,7 +16,6 @@ use App\Http\Controllers\Api\User\ProductImageController as UserProductImageCont
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->name('api.auth.')->group(function () {
-    Route::post('register', [AuthController::class, 'register'])->middleware('throttle:10,1')->name('register');
     Route::post('login', [AuthController::class, 'login'])->middleware('throttle:10,1')->name('login');
 });
 

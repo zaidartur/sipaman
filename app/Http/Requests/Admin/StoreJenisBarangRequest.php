@@ -2,10 +2,14 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Http\Requests\Admin\Concerns\ValidatesJenisBarangFields;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class StoreJenisBarangRequest extends FormRequest
 {
+    use ValidatesJenisBarangFields;
+
     public function authorize(): bool
     {
         return true;
@@ -15,11 +19,16 @@ class StoreJenisBarangRequest extends FormRequest
     {
         return [
             'nama_jenis' => ['required', 'string', 'max:100', 'unique:jenis_barangs,nama_jenis'],
-            'slug' => ['nullable', 'string', 'max:160', 'unique:jenis_barangs,slug'],
+            'slug' => ['nullable', 'string', 'max:160'],
             'deskripsi' => ['nullable', 'string', 'max:1000'],
             'is_active' => ['sometimes', 'boolean'],
             'aliases' => ['nullable', 'string', 'max:5000'],
         ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $this->validateJenisBarangFields($validator);
     }
 
     public function messages(): array

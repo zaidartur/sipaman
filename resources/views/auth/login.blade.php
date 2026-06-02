@@ -38,7 +38,7 @@
                 <p class="mt-2 text-on-surface-variant">Masukkan kredensial yang diberikan admin SIPAMAN.</p>
 
                 <x-alert type="info" class="mt-6">
-                    Akun pelaku usaha dibuat oleh admin. Registrasi mandiri tidak tersedia.
+                    Akun pelaku usaha dibuat oleh admin SIPAMAN.
                 </x-alert>
 
                 @if ($errors->any())

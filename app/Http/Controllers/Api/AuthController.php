@@ -16,15 +16,6 @@ class AuthController extends Controller
     use LogsAuditTrail;
 
     // ──────────────────────────────────────────────────────────
-    //  POST /api/auth/register  (Publik) — DINONAKTIFKAN
-    // ──────────────────────────────────────────────────────────
-    public function register(Request $request): JsonResponse
-    {
-        return response()->json([
-            'message' => 'Registrasi mandiri dinonaktifkan. Akun pelaku usaha dibuat oleh admin SIPAMAN.',
-        ], 403);
-    }
-
     // ──────────────────────────────────────────────────────────
     //  POST /api/auth/login  (Publik)
     //  Body: { "identifier": "<NIB pelaku usaha atau email admin>", "password": "..." }
