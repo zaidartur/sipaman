@@ -22,7 +22,37 @@ use App\Http\Controllers\Web\User\DashboardController as UserDashboardController
 use App\Http\Controllers\Web\User\ProductSettingController;
 use Illuminate\Support\Facades\Route;
 
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Response;
+
 Route::get('/', [HomeController::class, 'index'])->name('home');
+
+// showing file from Minio
+Route::get('/storage/{path}', function ($path) {
+    // 1. SECURITY CHECK: Prevent Directory Traversal attacks (e.g., trying to use '../../')
+    if (Str::contains($path, '..')) {
+        abort(403, 'Unauthorized action.');
+    }
+
+    // 2. OPTIONAL SECURITY CHECK: Force the route to only serve product images
+    // If someone tries to look at 'passwords/secret.txt', it will deny them
+    if (!Str::startsWith($path, 'produk/')) {
+        abort(403, 'Unauthorized folder access.');
+    }
+
+    // 3. Check file existence
+    if (!Storage::disk('s3')->exists($path)) {
+        abort(404);
+    }
+
+    // 4. Stream securely
+    $file = Storage::disk('s3')->get($path);
+    $type = Storage::disk('s3')->mimeType($path);
+
+    return response($file, 200)
+        ->header("Content-Type", $type)
+        ->header("Cache-Control", "public, max-age=86400");
+})->where('path', '.*');
 
 Route::prefix('products')->name('products.')->group(function () {
     Route::get('/', [PublicProductController::class, 'index'])->name('index');
