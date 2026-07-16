@@ -78,7 +78,7 @@
         </nav>
 
         <noscript>
-            <style>
+            <style nonce="{{ app(\Spatie\Csp\Nonce\NonceGenerator::class)->generate() }}">
                 #admin-sidebar-scroll {
                     visibility: visible !important;
                 }

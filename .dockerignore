@@ -1,0 +1,5 @@
+.env
+.env.production
+/vendor
+/node_modules
+/public/build

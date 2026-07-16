@@ -1,7 +1,7 @@
 @extends('layouts.public')
 @section('title', 'Dashboard Pelaku Usaha')
 @section('content')
-<style>
+<style nonce="{{ app(\Spatie\Csp\Nonce\NonceGenerator::class)->generate() }}">
     /* Pengaman: dialog yang tertutup tidak boleh menghalangi klik */
     dialog:not([open]) { display: none; }
 </style>

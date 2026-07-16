@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Support\SystemSettings;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,5 +25,9 @@ class AppServiceProvider extends ServiceProvider
         View::composer('*', function ($view) {
             $view->with('siteSettings', SystemSettings::all());
         });
+
+        if (config('app.env') === 'production' || app()->environment('production')) {
+            URL::forceScheme('https');
+        }
     }
 }
