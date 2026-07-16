@@ -73,7 +73,8 @@ class SystemSettingService
 
         if ($setting->key === 'site_logo_path') {
             if ($logo instanceof UploadedFile) {
-                $setting->value = $logo->store(self::LOGO_DIRECTORY, 'public');
+                // $setting->value = $logo->store(self::LOGO_DIRECTORY, 'public');
+                $setting->value = $logo->store(self::LOGO_DIRECTORY, 's3');
             }
         } else {
             $setting->value = array_key_exists('value', $data)
@@ -253,6 +254,7 @@ class SystemSettingService
             return;
         }
 
-        Storage::disk('public')->delete($oldPath);
+        // Storage::disk('public')->delete($oldPath);
+        Storage::disk('s3')->delete($oldPath);
     }
 }

@@ -18,7 +18,8 @@ class ProductImageService
     {
         $this->ensureVerified($produk);
 
-        $newPath = $file->store("produk/{$produk->id}", 'public');
+        // $newPath = $file->store("produk/{$produk->id}", 'public');
+        $newPath = $file->store("produk/{$produk->id}", 's3');
         $oldPaths = [];
 
         try {
@@ -41,13 +42,15 @@ class ProductImageService
                 ]);
             });
         } catch (Throwable $e) {
-            Storage::disk('public')->delete($newPath);
+            // Storage::disk('public')->delete($newPath);
+            Storage::disk('s3')->delete($newPath);
 
             throw $e;
         }
 
         foreach (array_unique($oldPaths) as $oldPath) {
-            Storage::disk('public')->delete($oldPath);
+            // Storage::disk('public')->delete($oldPath);
+            Storage::disk('s3')->delete($oldPath);
         }
 
         return $gambar->fresh() ?? $gambar;
@@ -61,7 +64,8 @@ class ProductImageService
         DB::transaction(function () use ($gambarProduk) {
             $path = $gambarProduk->url_gambar;
             $gambarProduk->delete();
-            Storage::disk('public')->delete($path);
+            // Storage::disk('public')->delete($path);
+            Storage::disk('s3')->delete($path);
         });
     }
 

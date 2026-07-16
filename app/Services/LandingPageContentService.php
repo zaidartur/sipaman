@@ -119,7 +119,8 @@ class LandingPageContentService
         $newImagePath = null;
 
         if (($data['image'] ?? null) instanceof UploadedFile) {
-            $newImagePath = $data['image']->store('landing-page', 'public');
+            // $newImagePath = $data['image']->store('landing-page', 'public');
+            $newImagePath = $data['image']->store('landing-page', 's3');
             $data['image_path'] = $newImagePath;
         } elseif (! empty($data['remove_image'])) {
             $data['image_path'] = null;
@@ -132,7 +133,8 @@ class LandingPageContentService
         $content->save();
 
         if ($oldImagePath && ($newImagePath || array_key_exists('image_path', $data))) {
-            Storage::disk('public')->delete($oldImagePath);
+            // Storage::disk('public')->delete($oldImagePath);
+            Storage::disk('s3')->delete($oldImagePath);
         }
 
         return $content->fresh('updatedBy');
