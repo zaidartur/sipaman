@@ -1,74 +1,63 @@
 services:
-  # 1. Laravel Application Container (PHP-FPM)
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    image: laravel13-app
-    container_name: laravel-app
+      args:
+        # Samakan dengan UID/GID user yang menjalankan `docker compose` di
+        # host, supaya file yang ditulis container (termasuk log) tetap
+        # bisa dibaca/ditulis host tanpa sudo. Jalankan:
+        #   APP_UID=$(id -u) APP_GID=$(id -g) docker compose -f docker-compose.prod.example.yml build
+        APP_UID: ${APP_UID:-1000}
+        APP_GID: ${APP_GID:-1000}
+        # APP_UID: 1000:-1000
+        # APP_GID: 1000:-1000
+    # image: ghcr.io/zaidartur/sipaman-app:v1.720   # sesuaikan tag hasil build
     restart: unless-stopped
-    tty: true
-    environment:
-      SERVICE_NAME: app
-      SERVICE_TAGS: dev
-    volumes:
-      - .:/var/www
-    networks:
-      - laravel-network
-
-  # 2. Nginx Web Server Container
-  webserver:
-    image: nginx:alpine
-    container_name: laravel-webserver
-    restart: unless-stopped
-    tty: true
     ports:
-      - "8000:80"
-    volumes:
-      - .:/var/www
-      - ./docker-config/nginx/app.conf:/etc/nginx/conf.d/default.conf
-    networks:
-      - laravel-network
-    depends_on:
-      - app
-
-  # 3. Node.js Container (Untuk Vite / Asset Compilation)
-  node:
-    image: node:22-alpine
-    container_name: laravel-node
-    working_dir: /var/www
-    volumes:
-      - .:/var/www
-    ports:
-      - "5173:5173" # Port default Vite
+      - "8080:8080"          # taruh reverse proxy (Traefik/Nginx/ALB) di depan ini untuk TLS
     environment:
-      - NODE_ENV=development
-    command: ["npm", "run", "dev", "--", "--host"]
-    networks:
-      - laravel-network
-
-  # 4. MySQL Database Container
-  db:
-    image: mysql:8.0
-    container_name: laravel-db
-    restart: unless-stopped
-    tty: true
-    ports:
-      - "3306:3306"
-    environment:
-      MYSQL_DATABASE: ${DB_DATABASE:-laravel}
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-root}
-      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+      APP_ENV: production
+      APP_DEBUG: "false"
+      # Kredensial MinIO (S3-compatible) tetap dari .env.production Anda:
+      # FILESYSTEM_DISK=s3, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY,
+      # AWS_ENDPOINT, AWS_USE_PATH_STYLE_ENDPOINT=true, dst.
+    env_file:
+      - .env
     volumes:
-      - dbdata:/var/lib/mysql
-    networks:
-      - laravel-network
-
-networks:
-  laravel-network:
-    driver: bridge
+      # --- Bind mount storage/logs ke host agar laravel.log bisa dibaca
+      #     langsung dari host (mis. `tail -f storage/logs/laravel.log`) ---
+      - ./storage/logs:/var/www/storage/logs
+      # Bagian storage lain yang tetap perlu writable secara lokal
+      # (upload ke MinIO tidak butuh ini, tapi framework cache/session/view
+      # tetap disimpan lokal oleh Laravel secara default):
+      - ./storage/framework:/var/www/storage/framework
+      - ./storage/app/private:/var/www/storage/app/private
+      - cache_data:/var/www/bootstrap/cache
+    # --- Hardening runtime ---
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN          # dibutuhkan entrypoint saat menyesuaikan permission volume
+      - SETUID
+      - SETGID
+    read_only: false     # nginx/php-fpm perlu menulis ke beberapa path runtime;
+                          # jika ingin read_only:true, tambahkan tmpfs di bawah
+                          # untuk /tmp, /var/lib/nginx, /var/log/nginx, /run/nginx
+    tmpfs:
+      - /tmp
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
 
 volumes:
-  dbdata:
-    driver: local
+  cache_data:

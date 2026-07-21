@@ -7,3 +7,4 @@
 - pembuatan file pendukung untuk docker seperti web-server, dan konfigursai php di folder docker-config
 - add route for Minio storage, hapus symlink untuk folder storage
 - pembaruan beberapa script upload di folder Services untuk menyesuaikan dengan Minio
+- menambahkan script di AppServiceProvider

@@ -14,7 +14,6 @@ WORKDIR /var/www
 
 # Install system dependencies & PHP extensions (Alpine version for smaller size)
 RUN apk add --no-cache \
-    git \
     curl \
     libpng-dev \
     libjpeg-turbo-dev \
@@ -31,6 +30,9 @@ RUN docker-php-ext-install pdo_mysql mbstring zip exif pcntl bcmath gd opcache
 
 # Copy Composer dari image official
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# [SECURITY] Ubah kepemilikan folder kerja ke www-data terlebih dahulu
+# RUN chown -R www-data:www-data /var/www
 
 # Copy semua file aplikasi ke container
 COPY . /var/www
@@ -49,10 +51,16 @@ COPY ./docker-config/php/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
 COPY ./docker-config/php/uploads.ini /usr/local/etc/php/conf.d/uploads.ini
 
 # Atur permission agar folder writable oleh www-data (Web Server)
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
-RUN chmod -R 775 storage bootstrap/cache
-# RUN chown -R www-data:www-data storage bootstrap/cache
+# RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+# RUN chmod -R 775 storage /var/www/storage bootstrap/cache
+
+# [SECURITY] Jalankan container menggunakan user non-root (www-data)
+# USER www-data
+
+COPY docker-config/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Expose port 9000
 EXPOSE 9000
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["php-fpm"]

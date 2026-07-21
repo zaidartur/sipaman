@@ -1,0 +1,7 @@
+# Dockerfile.nginx.prod
+ARG APP_IMAGE=ghcr.io/zaidartur/sipaman-app:v1.720
+FROM ${APP_IMAGE} AS app
+
+FROM nginx:alpine
+COPY --from=app /var/www/public /usr/share/nginx/html
+COPY docker-config/nginx/app.conf /etc/nginx/conf.d/default.conf

@@ -34,6 +34,12 @@ return Application::configure(basePath: dirname(__DIR__))
 
             return route('login');
         });
+
+        $middleware->web(append: [
+            \Spatie\Csp\AddCspHeaders::class,
+        ]);
+
+        $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
