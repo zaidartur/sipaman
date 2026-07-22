@@ -7,6 +7,7 @@
     <meta name="author" content="Diskominfo Kabupaten Karanganyar">
     <meta name="description" content="Sistem Informasi Pangan Aman oleh Dinas Kesehatan Kabupaten Karanganyar">
 
+    <link rel="icon" type="image/x-icon" href="{{ asset('logo.jpeg') }}">
     @php($siteName = ($siteSettings['site_name'] ?? null) ?: 'SIPAMAN')
     <title>@hasSection('title') @yield('title') | {{ $siteName }} @else Masuk ke {{ $siteName }} @endif</title>
 
