@@ -36,7 +36,7 @@ Route::get('/storage/{path}', function ($path) {
 
     // 2. OPTIONAL SECURITY CHECK: Force the route to only serve product images
     // If someone tries to look at 'passwords/secret.txt', it will deny them
-    if (!Str::startsWith($path, 'produk/')) {
+    if (!Str::startsWith($path, ['produk/', 'settings/'])) {
         abort(403, 'Unauthorized folder access.');
     }
 
