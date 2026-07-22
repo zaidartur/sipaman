@@ -4,6 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="author" content="Diskominfo Kabupaten Karanganyar">
+    <meta name="description" content="Sistem Informasi Pangan Aman oleh Dinas Kesehatan Kabupaten Karanganyar">
 
     @php($siteName = ($siteSettings['site_name'] ?? null) ?: 'SIPAMAN')
     <title>@hasSection('title') @yield('title') | {{ $siteName }} @else {{ $siteName }} @endif</title>
